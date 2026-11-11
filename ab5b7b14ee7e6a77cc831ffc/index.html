@@ -450,7 +450,7 @@ body.autotest #autotest-out { display: block; background: #111; color: #9f9; mar
       }
     },
     cozy: {
-      name: "Cozy",
+      name: "Cozy / Relax",
       apply: function () {
         setLights({ ceiling:15, sconces:20, pendants:25, landscape:30 });
         setUnder({ on:true, bri:25, mode:"ct", kelvin:2200 });
@@ -556,16 +556,9 @@ body.autotest #autotest-out { display: block; background: #111; color: #9f9; mar
         '<div class="dot">' + emoji + '</div><div class="name">' + name + '</div>' +
         '<div class="st">' + esc(st) + '</div><div class="hint">' + hint + '</div></button>';
     }
-    const scenes = [
-      ["entertain","🍸","Entertain",""],["party","🎉","Party",""],["dinner","🍽️","Dinner",""],["cozy","🌙","Cozy",""],
-      ["movie","🎬","Movie",""],["swim","🏊","Swim",""],["heatup","♨️","Heat Up","heatup"],["alloff","⏻","All Off","alloff"]
-    ].map(function (s) {
-      const on = state.lastScene === s[0] ? " active" : "";
-      return '<button type="button" class="scene ' + s[3] + on + '" data-action="scene" data-scene="' + s[0] + '"><div class="ico">' + s[1] + '</div><div class="name">' + s[2] + '</div></button>';
-    }).join("");
-    return '<div class="heading">Scenes</div><div class="scenes">' + scenes + '</div>' +
-      '<div class="heading">Areas</div>' +
-      '<div class="tiles">' +
+    const last = (state.lastScene && SCENES[state.lastScene]) ? SCENES[state.lastScene].name : "None yet";
+    return '<div class="tiles">' +
+        tile("scenes", state.lastScene?"on":"", "🎨", "Scenes", last, "8 scenes") +
         tile("tv", tvOn?"on":"", "📺", "TV", tvOn ? ("On · " + state.tv.source) : "Off", "Tap for power, source, volume") +
         tile("lighting", nL?"light-on":"", "💡", "Lighting", nL ? ("On · " + nL + " light" + (nL>1?"s":"")) : "Off", "Lutron + under-counter LED") +
         tile("pool", "on", "🏊", "Pool / Spa", state.pool.poolTemp + "°F · " + spa, "Pentair ScreenLogic") +
@@ -574,6 +567,19 @@ body.autotest #autotest-out { display: block; background: #111; color: #9f9; mar
         tile("music", (state.beam.playing||state.grouped)?"on":"", "🔊", "Music / Speakers", music, "Beam + four Outdoor Living amps") +
       '</div>' +
       '<p class="footer-note">Simulated cabana controls. Not connected to the live system.</p>';
+  }
+
+  function viewScenes() {
+    const scenes = [
+      ["entertain","🍸","Entertain",""],["party","🎉","Party",""],["dinner","🍽️","Dinner",""],["cozy","🌙","Cozy / Relax",""],
+      ["movie","🎬","Movie",""],["swim","🏊","Swim",""],["heatup","♨️","Heat Up","heatup"],["alloff","⏻","All Off","alloff"]
+    ].map(function (s) {
+      const on = state.lastScene === s[0] ? " active" : "";
+      return '<button type="button" class="scene ' + s[3] + on + '" data-action="scene" data-scene="' + s[0] + '"><div class="ico">' + s[1] + '</div><div class="name">' + s[2] + '</div></button>';
+    }).join("");
+    return backBtn() + '<div class="heading">Scenes</div>' +
+      '<p class="kicker">Tap a scene to apply it to the cabana.</p>' +
+      '<div class="scenes">' + scenes + '</div>';
   }
 
   function lightRow(id, name, entity) {
@@ -812,7 +818,7 @@ body.autotest #autotest-out { display: block; background: #111; color: #9f9; mar
       '<div class="meta"><div class="n">'+name+'</div><div class="e">'+entity+'</div><div class="s">'+value+'</div></div></div></div>';
   }
 
-  const VIEWS = { home: viewHome, lighting: viewLighting, heat: viewHeat, fan: viewFan, tv: viewTv, music: viewMusic, pool: viewPool };
+  const VIEWS = { home: viewHome, scenes: viewScenes, lighting: viewLighting, heat: viewHeat, fan: viewFan, tv: viewTv, music: viewMusic, pool: viewPool };
 
   function currentView() {
     const h = (location.hash || "#home").replace(/^#/, "") || "home";
@@ -829,7 +835,7 @@ body.autotest #autotest-out { display: block; background: #111; color: #9f9; mar
       app.classList.add("scene-flash");
       setTimeout(function () { app.classList.remove("scene-flash"); }, 600);
     }
-    const titles = { home:"Cabana", lighting:"Lighting", heat:"Heat", fan:"Fan", tv:"TV", music:"Music", pool:"Pool / Spa" };
+    const titles = { home:"Cabana", scenes:"Scenes", lighting:"Lighting", heat:"Heat", fan:"Fan", tv:"TV", music:"Music", pool:"Pool / Spa" };
     document.title = "Firmus Electronics – Barlow Cabana" + (view!=="home" ? " · " + titles[view] : "");
   }
 
