@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#111111">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Firmus Electronics – Barlow Cabana</title>
+<style>
+:root {
+  --bg: #0c0c0c;
+  --bar: #141414;
+  --card: #1c1c1c;
+  --card-2: #222;
+  --border: rgba(255,255,255,.12);
+  --text: #eee;
+  --muted: #9b9b9b;
+  --faint: #6e6e6e;
+  --accent: #03a9f4;
+  --accent-dim: rgba(3,169,244,.16);
+  --light: #ffc107;
+  --heat: #ff6d00;
+  --danger: #ef5350;
+  --ok: #66bb6a;
+  --track: #3a3a3a;
+  --radius: 14px;
+  --shadow: 0 1px 2px rgba(0,0,0,.45);
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bot: env(safe-area-inset-bottom, 0px);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: var(--bg); color: var(--text); }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100dvh;
+  padding-bottom: var(--safe-bot);
+}
+button, input, select { font: inherit; color: inherit; }
+button { background: none; border: 0; cursor: pointer; }
+a { color: var(--accent); }
+/* Header */
+.top {
+  position: sticky; top: 0; z-index: 20;
+  background: var(--bar);
+  border-bottom: 1px solid var(--border);
+  padding: calc(8px + var(--safe-top)) 14px 10px;
+}
+.top-inner {
+  max-width: 1100px; margin: 0 auto;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px;
+}
+.top img { height: 28px; width: auto; display: block; }
+.brand { flex: 1 1 200px; min-width: 0; }
+.brand h1 { font-size: 14px; font-weight: 650; letter-spacing: .01em; line-height: 1.3; }
+.brand p { font-size: 11px; color: var(--muted); margin-top: 1px; }
+.top-actions { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+.badge {
+  flex-shrink: 0;
+  font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+  color: #ffccbc; background: #3e2723; border: 1px solid #5d4037;
+  border-radius: 999px; padding: 5px 9px; white-space: nowrap;
+}
+.reset {
+  flex-shrink: 0; font-size: 12px; color: var(--muted); text-decoration: none;
+  border-bottom: 1px dotted var(--faint);
+}
+.reset:hover { color: var(--text); }
+@media (max-width: 639px) {
+  .top-actions { flex: 1 1 100%; justify-content: space-between; margin-left: 0; }
+}
+/* App */
+.app { max-width: 1100px; margin: 0 auto; padding: 14px 12px 28px; }
+@media (min-width: 720px) { .app { padding: 20px 20px 40px; } }
+.view-enter { animation: fadeUp .28s ease; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.scene-flash { animation: flash .55s ease; }
+@keyframes flash { 0% { filter: brightness(1); } 35% { filter: brightness(1.18); } 100% { filter: brightness(1); } }
+
+.heading { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 600; margin: 6px 2px 10px; }
+.heading.sub { font-size: 13px; font-weight: 550; color: #ddd; margin-top: 16px; }
+.kicker { font-size: 12px; color: var(--muted); margin: -4px 2px 12px; }
+
+/* Scenes */
+.scenes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 18px; }
+@media (min-width: 720px) { .scenes { grid-template-columns: repeat(4, 1fr); gap: 12px; } }
+.scene {
+  background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+  box-shadow: var(--shadow); min-height: 96px; padding: 14px 8px 12px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+  transition: border-color .15s, background .15s, transform .12s;
+}
+.scene:active { transform: scale(.98); }
+.scene .ico { font-size: 26px; line-height: 1; }
+.scene .name { font-size: 13px; font-weight: 600; }
+.scene.active { border-color: var(--accent); background: var(--accent-dim); }
+.scene.alloff .ico { color: var(--danger); }
+.scene.heatup .ico { color: var(--heat); }
+
+/* Tiles */
+.tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+@media (min-width: 720px) { .tiles { grid-template-columns: repeat(3, 1fr); gap: 12px; } }
+.tile-btn {
+  background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+  box-shadow: var(--shadow); min-height: 132px; padding: 16px 14px 14px; text-align: left;
+  display: flex; flex-direction: column; gap: 6px;
+  transition: border-color .15s, transform .12s;
+}
+.tile-btn:active { transform: scale(.98); }
+.tile-btn .dot {
+  width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  background: #2a2a2a; font-size: 22px; margin-bottom: 4px;
+}
+.tile-btn.on .dot { background: var(--accent-dim); }
+.tile-btn.heat-on .dot { background: rgba(255,109,0,.2); }
+.tile-btn.light-on .dot { background: rgba(255,193,7,.18); }
+.tile-btn .name { font-size: 16px; font-weight: 600; }
+.tile-btn .st { font-size: 13px; color: var(--muted); }
+.tile-btn .hint { font-size: 11px; color: var(--faint); margin-top: auto; }
+
+/* Back */
+.back {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--card); border: 1px solid var(--border); border-radius: 999px;
+  padding: 8px 14px; font-size: 13px; font-weight: 600; margin-bottom: 12px;
+}
+.back:active { background: var(--card-2); }
+
+/* Cards */
+.card {
+  background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+  box-shadow: var(--shadow); padding: 12px 14px; margin-bottom: 10px;
+}
+.row { display: flex; align-items: center; gap: 12px; }
+.sw { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #2a2a2a; font-size: 18px; flex-shrink: 0; }
+.sw.on.light { background: rgba(255,193,7,.18); }
+.sw.on.heat { background: rgba(255,109,0,.2); }
+.sw.on.cool { background: var(--accent-dim); }
+.meta { flex: 1; min-width: 0; }
+.meta .n { font-size: 14px; font-weight: 600; }
+.meta .e { font-size: 10px; color: var(--faint); font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; margin-top: 1px; }
+.meta .s { font-size: 13px; color: var(--muted); margin-top: 1px; }
+.tog {
+  width: 44px; height: 26px; border-radius: 13px; background: #3a3a3a; position: relative; flex-shrink: 0;
+  transition: background .15s;
+}
+.tog::after { content: ""; width: 20px; height: 20px; border-radius: 50%; background: #fff; position: absolute; top: 3px; left: 3px; transition: left .15s; }
+.tog.on { background: var(--accent); }
+.tog.on::after { left: 21px; }
+.tog.heat.on { background: var(--heat); }
+
+/* Sliders */
+.slider { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+.slider input[type=range] { flex: 1; -webkit-appearance: none; appearance: none; height: 4px; background: var(--track); border-radius: 4px; outline: none; }
+.slider input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.5); cursor: pointer; }
+.slider .pct { width: 42px; text-align: right; font-size: 12px; color: var(--muted); }
+.bri-fill-light::-webkit-slider-runnable-track, .slider input.warm { }
+.ct-range { flex: 1; -webkit-appearance: none; appearance: none; height: 6px; border-radius: 4px; outline: none;
+  background: linear-gradient(90deg, #ffb74d 0%, #fff4d6 45%, #e3f2fd 75%, #90caf9 100%); }
+
+/* Buttons / chips */
+.btns { display: grid; gap: 8px; margin-top: 8px; }
+.btns.c2 { grid-template-columns: 1fr 1fr; }
+.btns.c3 { grid-template-columns: 1fr 1fr 1fr; }
+.btns.c4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+.chip {
+  background: #2a2a2a; border: 1px solid var(--border); border-radius: 10px;
+  padding: 10px 8px; font-size: 12px; font-weight: 600; text-align: center;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; min-height: 52px;
+}
+.chip.active { border-color: var(--accent); background: var(--accent-dim); }
+.chip.danger { color: #ffcdd2; }
+.dotc { width: 14px; height: 14px; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(255,255,255,.25), 0 0 0 1px rgba(0,0,0,.35); }
+
+/* Color wheel */
+.wheel-wrap { display: flex; flex-direction: column; align-items: center; padding: 8px 0 4px; }
+.wheel {
+  width: 150px; height: 150px; border-radius: 50%; position: relative; touch-action: none; cursor: pointer;
+  background: conic-gradient(#ff0000, #ff9900, #ffee00, #33dd33, #00e5ff, #2266ff, #aa00ff, #ff0000);
+  box-shadow: 0 0 0 3px #2a2a2a, inset 0 0 0 36px var(--card);
+}
+.wheel .hub {
+  position: absolute; left: 50%; top: 50%; width: 54px; height: 54px; margin: -27px 0 0 -27px;
+  border-radius: 50%; box-shadow: inset 0 0 0 2px rgba(255,255,255,.3), 0 1px 4px rgba(0,0,0,.45);
+  pointer-events: none;
+}
+.wheel .handle {
+  position: absolute; width: 16px; height: 16px; border-radius: 50%; background: #fff;
+  border: 2px solid #fff; box-shadow: 0 1px 3px rgba(0,0,0,.5); transform: translate(-50%,-50%);
+  pointer-events: none;
+}
+.note { font-size: 11px; color: var(--muted); line-height: 1.45; padding: 8px 12px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); margin: 8px 0; }
+.grid2 { display: grid; gap: 10px; }
+@media (min-width: 720px) { .grid2.two { grid-template-columns: 1fr 1fr; } .span2 { grid-column: 1 / -1; } }
+
+/* Thermostat */
+.thermo { display: flex; align-items: center; gap: 16px; }
+.dial { width: 92px; height: 92px; border-radius: 50%; border: 6px solid #2a2a2a; border-top-color: var(--heat);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; }
+.dial .big { font-size: 22px; font-weight: 700; }
+.dial .sm { font-size: 10px; color: var(--muted); }
+.stepper { display: flex; gap: 8px; margin-top: 8px; }
+.stepper button {
+  width: 44px; height: 44px; border-radius: 10px; background: #2a2a2a; border: 1px solid var(--border);
+  font-size: 22px; font-weight: 600;
+}
+
+/* Toast */
+.toast {
+  position: fixed; left: 50%; bottom: calc(20px + var(--safe-bot)); transform: translateX(-50%) translateY(12px);
+  background: #1a1a1a; border: 1px solid var(--border); color: var(--text);
+  border-radius: 999px; padding: 10px 16px; font-size: 13px; font-weight: 600;
+  box-shadow: 0 8px 24px rgba(0,0,0,.45); opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s;
+  z-index: 50; max-width: calc(100% - 32px); text-align: center;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+#autotest-out { display: none; white-space: pre-wrap; font-size: 11px; padding: 12px; }
+body.autotest #autotest-out { display: block; background: #111; color: #9f9; margin: 8px; border: 1px solid #333; }
+.countdown { font-size: 12px; color: #ffcc80; margin-top: 8px; }
+.muted-tag { color: var(--danger); font-weight: 600; }
+.footer-note { text-align: center; font-size: 10px; color: var(--faint); margin-top: 18px; }
+</style>
+</head>
+<body>
+  <header class="top">
+    <div class="top-inner">
+      <img src="data:image/png;base64,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" alt="Firmus">
+      <div class="brand">
+        <h1>Firmus Electronics – Barlow Cabana</h1>
+      </div>
+      <div class="top-actions">
+        <span class="badge">Demo – simulated controls</span>
+        <a href="#" class="reset" id="reset-link">Reset demo</a>
+      </div>
+    </div>
+  </header>
+  <main class="app" id="app"></main>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <pre id="autotest-out"></pre>
+<script>
+(function () {
+  "use strict";
+  const STORE = "firmus-barlow-cabana-demo-v1";
+  const THREE_H = 3 * 60 * 60 * 1000;
+  const MODES = [
+    ["party","Party","#ff4081"],["romance","Romance","#e040fb"],["caribbean","Caribbean","#00bcd4"],
+    ["american","American","#ef5350"],["sunset","Sunset","#ff9800"],["royal","Royal","#7c4dff"],
+    ["blue","Blue","#1565c0"],["green","Green","#43a047"],["red","Red","#e53935"],
+    ["white","White","#eeeeee"],["magenta","Magenta","#d500f9"]
+  ];
+  const PRESETS = {
+    warm:   { mode: "ct",  kelvin: 2700, label: "Warm white", rgb: [255,183,77] },
+    cool:   { mode: "ct",  kelvin: 6500, label: "Cool white", rgb: [227,242,253] },
+    blue:   { mode: "rgb", rgb: [0,80,255],   label: "Blue" },
+    purple: { mode: "rgb", rgb: [160,0,255],  label: "Purple" },
+    red:    { mode: "rgb", rgb: [255,0,0],    label: "Red" },
+    green:  { mode: "rgb", rgb: [0,200,40],   label: "Green" }
+  };
+  const SOURCES = ["HDMI 1","HDMI 2","TV","Smart Hub"];
+
+  function defaults() {
+    return {
+      lastScene: null,
+      lights: {
+        ceiling:   { on: false, bri: 100 },
+        sconces:   { on: false, bri: 80 },
+        pendants:  { on: false, bri: 70 },
+        landscape: { on: false, bri: 40 }
+      },
+      under: { on: false, bri: 100, mode: "ct", kelvin: 2700, rgb: [255,183,77] },
+      heaters: { 1: false, 2: false, 3: false },
+      heaterOnAt: { 1: null, 2: null, 3: null },
+      fan: { pct: 0, dir: "forward" },
+      tv: { on: false, source: "HDMI 1", volume: 35, mute: false },
+      beam: { playing: false, volume: 35 },
+      amps: { 1: 35, 2: 35, 3: 35, 4: 35 },
+      grouped: false,
+      pool: {
+        light: false, mode: "white", spa: false, pump: true,
+        poolTemp: 84, spaTemp: 102, airTemp: 72, setpoint: 86
+      }
+    };
+  }
+
+  function load() {
+    try {
+      const raw = localStorage.getItem(STORE);
+      if (!raw) return defaults();
+      const s = Object.assign(defaults(), JSON.parse(raw));
+      s.lights = Object.assign(defaults().lights, s.lights);
+      s.under = Object.assign(defaults().under, s.under);
+      s.heaters = Object.assign(defaults().heaters, s.heaters);
+      s.heaterOnAt = Object.assign(defaults().heaterOnAt, s.heaterOnAt);
+      s.fan = Object.assign(defaults().fan, s.fan);
+      s.tv = Object.assign(defaults().tv, s.tv);
+      s.beam = Object.assign(defaults().beam, s.beam);
+      s.amps = Object.assign(defaults().amps, s.amps);
+      s.pool = Object.assign(defaults().pool, s.pool);
+      return s;
+    } catch (e) { return defaults(); }
+  }
+  function save() { try { localStorage.setItem(STORE, JSON.stringify(state)); } catch (e) {} }
+
+  let state = load();
+  let toastTimer = 0;
+
+  function toast(msg) {
+    const el = document.getElementById("toast");
+    el.textContent = msg;
+    el.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { el.classList.remove("show"); }, 2200);
+  }
+
+  function lightsOnCount() {
+    let n = 0;
+    Object.keys(state.lights).forEach(function (k) { if (state.lights[k].on && state.lights[k].bri > 0) n++; });
+    if (state.under.on && state.under.bri > 0) n++;
+    return n;
+  }
+  function heatersOnCount() {
+    return [1,2,3].filter(function (i) { return state.heaters[i]; }).length;
+  }
+  function fanLabel() {
+    if (!state.fan.pct) return "Off";
+    const spd = state.fan.pct <= 33 ? "Low" : state.fan.pct <= 66 ? "Med" : "High";
+    return spd + " · " + state.fan.pct + "% · " + (state.fan.dir === "forward" ? "Forward" : "Reverse");
+  }
+  function rgbCss(rgb) { return "rgb(" + rgb[0] + "," + rgb[1] + "," + rgb[2] + ")"; }
+  function kelvinRgb(k) {
+    const t = Math.max(0, Math.min(1, (k - 2200) / (6500 - 2200)));
+    const r = 255;
+    const g = Math.round(167 + (230 - 167) * t);
+    const b = Math.round(77 + (253 - 77) * t);
+    return [r, g, b];
+  }
+  function underColor() {
+    return state.under.mode === "ct" ? kelvinRgb(state.under.kelvin) : state.under.rgb;
+  }
+  function setHeater(id, on) {
+    state.heaters[id] = on;
+    state.heaterOnAt[id] = on ? Date.now() : null;
+    state.lastScene = null;
+  }
+  function allHeaters(on) {
+    [1,2,3].forEach(function (i) { setHeater(i, on); });
+  }
+  function heaterRemaining() {
+    const starts = [1,2,3].filter(function (i) { return state.heaters[i] && state.heaterOnAt[i]; })
+      .map(function (i) { return state.heaterOnAt[i]; });
+    if (!starts.length) return null;
+    return Math.max(0, Math.min.apply(null, starts) + THREE_H - Date.now());
+  }
+  function fmtRemain(ms) {
+    const s = Math.ceil(ms / 1000);
+    const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
+    return h + "h " + String(m).padStart(2,"0") + "m " + String(sec).padStart(2,"0") + "s";
+  }
+  function tickHeaters() {
+    const rem = heaterRemaining();
+    if (rem === 0) {
+      allHeaters(false);
+      state.lastScene = null;
+      save();
+      toast("Heaters auto-off after 3 hours");
+      render();
+      return;
+    }
+    const el = document.querySelector(".countdown");
+    if (el && rem !== null) el.textContent = "Safety auto-off in " + fmtRemain(rem) + " (3-hour timer)";
+  }
+  function setBeamPlaying(on, auto) {
+    state.beam.playing = !!on;
+    if (on && !state.grouped) {
+      state.grouped = true;
+      if (auto !== false) toast("Amps joined the Beam (auto-group)");
+    }
+  }
+  function setTv(on) {
+    state.tv.on = !!on;
+    if (on) {
+      // HDMI-ARC: soundbar starts playing with the TV
+      setBeamPlaying(true, true);
+    } else {
+      state.beam.playing = false;
+    }
+  }
+
+  const SCENES = {
+    entertain: {
+      name: "Entertain",
+      apply: function () {
+        setLights({ ceiling:100, sconces:80, pendants:70, landscape:100 });
+        setUnder({ on:true, bri:100, mode:"ct", kelvin:3500 });
+        state.fan.pct = 66;
+        state.pool.light = true; state.pool.mode = "party";
+      }
+    },
+    party: {
+      name: "Party",
+      apply: function () {
+        setLights({ ceiling:100, sconces:90, pendants:80, landscape:100 });
+        setUnder({ on:true, bri:100, mode:"rgb", rgb:[160,0,255] });
+        state.fan.pct = 80;
+        state.grouped = true;
+        state.pool.light = true; state.pool.mode = "party";
+      }
+    },
+    dinner: {
+      name: "Dinner",
+      apply: function () {
+        setLights({ ceiling:40, sconces:35, pendants:45, landscape:60 });
+        setUnder({ on:true, bri:50, mode:"ct", kelvin:2700 });
+        state.fan.pct = 33;
+      }
+    },
+    cozy: {
+      name: "Cozy",
+      apply: function () {
+        setLights({ ceiling:15, sconces:20, pendants:25, landscape:30 });
+        setUnder({ on:true, bri:25, mode:"ct", kelvin:2200 });
+        state.fan.pct = 33;
+      }
+    },
+    movie: {
+      name: "Movie",
+      apply: function () {
+        setLights({ ceiling:10, sconces:0, pendants:0, landscape:0 });
+        setUnder({ on:true, bri:15, mode:"ct", kelvin:2700 });
+        state.fan.pct = 33;
+        setTv(true);
+        state.grouped = true;
+        state.pool.light = false;
+      }
+    },
+    swim: {
+      name: "Swim",
+      apply: function () {
+        setLights({ ceiling:30, sconces:40, pendants:0, landscape:80 });
+        setUnder({ on:true, bri:80, mode:"rgb", rgb:[0,80,255] });
+        state.fan.pct = 66;
+        state.grouped = true;
+        state.pool.light = true; state.pool.mode = "caribbean";
+      }
+    },
+    heatup: {
+      name: "Heat Up",
+      apply: function () { allHeaters(true); }
+    },
+    alloff: {
+      name: "All Off",
+      apply: function () {
+        setLights({ ceiling:0, sconces:0, pendants:0, landscape:0 });
+        setUnder({ on:false, bri:0 });
+        allHeaters(false);
+        state.fan.pct = 0;
+        state.tv.on = false;
+        state.beam.playing = false;
+        state.grouped = false;
+        state.pool.light = false;
+      }
+    }
+  };
+
+  function setLights(map) {
+    Object.keys(map).forEach(function (k) {
+      const bri = map[k];
+      state.lights[k].bri = bri || state.lights[k].bri || 0;
+      if (bri === 0) { state.lights[k].on = false; state.lights[k].bri = 0; }
+      else { state.lights[k].on = true; state.lights[k].bri = bri; }
+    });
+  }
+  function setUnder(o) {
+    if (o.on === false) { state.under.on = false; if (o.bri != null) state.under.bri = o.bri; return; }
+    state.under.on = true;
+    if (o.bri != null) state.under.bri = o.bri;
+    if (o.mode) state.under.mode = o.mode;
+    if (o.kelvin != null) { state.under.kelvin = o.kelvin; state.under.mode = "ct"; }
+    if (o.rgb) { state.under.rgb = o.rgb; state.under.mode = o.mode || "rgb"; }
+  }
+
+  function applyScene(id) {
+    const sc = SCENES[id];
+    if (!sc) return;
+    sc.apply();
+    state.lastScene = id;
+    save();
+    toast(sc.name + " scene applied");
+    render({ flash: true });
+  }
+
+  function resetDemo(ev) {
+    if (ev) ev.preventDefault();
+    state = defaults();
+    save();
+    toast("Demo reset");
+    location.hash = "home";
+    render();
+  }
+
+  /* ---------- views ---------- */
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return ({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;" })[c]; }); }
+
+  function backBtn() {
+    return '<button type="button" class="back" data-action="nav" data-view="home">← Back</button>';
+  }
+  function tog(on, action, extra) {
+    return '<button type="button" class="tog' + (on ? " on" : "") + '" data-action="' + action + '" ' + (extra||"") + ' aria-pressed="' + on + '"></button>';
+  }
+  function range(action, val, min, max, extra, cls, labelW) {
+    return '<div class="slider"><input type="range" min="' + min + '" max="' + max + '" value="' + val + '" data-action="' + action + '" ' + (extra||"") + (cls? ' class="'+cls+'"':'') + '><span class="pct" style="' + (labelW||"") + '">' + val + (cls==="ct-range"? "K":"%") + '</span></div>';
+  }
+
+  function viewHome() {
+    const nL = lightsOnCount(), nH = heatersOnCount();
+    const tvOn = state.tv.on, fanOn = state.fan.pct > 0;
+    const music = state.beam.playing ? (state.grouped ? "Playing · grouped" : "Playing") : (state.grouped ? "Idle · grouped" : "Idle");
+    const spa = state.pool.spa ? "Spa on" : "Spa off";
+    function tile(view, cls, emoji, name, st, hint) {
+      return '<button type="button" class="tile-btn ' + cls + '" data-action="nav" data-view="' + view + '">' +
+        '<div class="dot">' + emoji + '</div><div class="name">' + name + '</div>' +
+        '<div class="st">' + esc(st) + '</div><div class="hint">' + hint + '</div></button>';
+    }
+    const scenes = [
+      ["entertain","🍸","Entertain",""],["party","🎉","Party",""],["dinner","🍽️","Dinner",""],["cozy","🌙","Cozy",""],
+      ["movie","🎬","Movie",""],["swim","🏊","Swim",""],["heatup","♨️","Heat Up","heatup"],["alloff","⏻","All Off","alloff"]
+    ].map(function (s) {
+      const on = state.lastScene === s[0] ? " active" : "";
+      return '<button type="button" class="scene ' + s[3] + on + '" data-action="scene" data-scene="' + s[0] + '"><div class="ico">' + s[1] + '</div><div class="name">' + s[2] + '</div></button>';
+    }).join("");
+    return '<div class="heading">Scenes</div><div class="scenes">' + scenes + '</div>' +
+      '<div class="heading">Areas</div>' +
+      '<div class="tiles">' +
+        tile("tv", tvOn?"on":"", "📺", "TV", tvOn ? ("On · " + state.tv.source) : "Off", "Tap for power, source, volume") +
+        tile("lighting", nL?"light-on":"", "💡", "Lighting", nL ? ("On · " + nL + " light" + (nL>1?"s":"")) : "Off", "Lutron + under-counter LED") +
+        tile("pool", "on", "🏊", "Pool / Spa", state.pool.poolTemp + "°F · " + spa, "Pentair ScreenLogic") +
+        tile("heat", nH?"heat-on":"", "🔥", "Heat", nH ? (nH + " of 3 on") : "Off", "Bromic patio heaters") +
+        tile("fan", fanOn?"on":"", "🌀", "Fan", fanLabel(), "Speed and direction") +
+        tile("music", (state.beam.playing||state.grouped)?"on":"", "🔊", "Music / Speakers", music, "Beam + four Outdoor Living amps") +
+      '</div>' +
+      '<p class="footer-note">Simulated cabana controls. Not connected to the live system.</p>';
+  }
+
+  function lightRow(id, name, entity) {
+    const L = state.lights[id];
+    const on = L.on && L.bri > 0;
+    return '<div class="card">' +
+      '<div class="row"><div class="sw ' + (on?"on light":"") + '">💡</div>' +
+      '<div class="meta"><div class="n">' + name + '</div><div class="e">' + entity + '</div>' +
+      '<div class="s">' + (on ? ("On · " + L.bri + "%") : "Off") + '</div></div>' +
+      tog(on, "toggle-light", 'data-id="'+id+'"') + '</div>' +
+      range("bri", L.bri, 0, 100, 'data-id="'+id+'"') +
+      '</div>';
+  }
+
+  function wheelHue() {
+    if (state.under.mode === "ct") return 30;
+    const rgb = state.under.rgb;
+    const r = rgb[0]/255, g = rgb[1]/255, b = rgb[2]/255;
+    const max = Math.max(r,g,b), min = Math.min(r,g,b), d = max-min;
+    let h = 0;
+    if (d) {
+      if (max===r) h = ((g-b)/d + (g<b?6:0)) * 60;
+      else if (max===g) h = ((b-r)/d + 2) * 60;
+      else h = ((r-g)/d + 4) * 60;
+    }
+    return h;
+  }
+  function wheelHandlePos() {
+    const h = wheelHue();
+    const rad = (h - 90) * Math.PI / 180;
+    const R = 57; // px from center of 150px wheel, mid-ring
+    const cx = 75, cy = 75;
+    return { x: cx + R * Math.cos(rad), y: cy + R * Math.sin(rad) };
+  }
+
+  function viewLighting() {
+    const u = state.under, on = u.on && u.bri > 0;
+    const col = underColor();
+    const hp = wheelHandlePos();
+    const presets = [
+      ["warm","Warm white","#ffb74d"],["cool","Cool white","#e3f2fd"],["blue","Blue","#1565c0"],
+      ["purple","Purple","#8e24aa"],["red","Red","#e53935"],["green","Green","#43a047"]
+    ].map(function (p) {
+      const active = (p[0]==="warm" && u.mode==="ct" && u.kelvin===2700) ||
+                     (p[0]==="cool" && u.mode==="ct" && u.kelvin===6500) ||
+                     (p[0]==="blue" && u.mode==="rgb" && u.rgb[2]===255 && u.rgb[0]===0) ||
+                     (p[0]==="purple" && u.mode==="rgb" && u.rgb[0]===160) ||
+                     (p[0]==="red" && u.mode==="rgb" && u.rgb[0]===255 && u.rgb[2]===0) ||
+                     (p[0]==="green" && u.mode==="rgb" && u.rgb[1]===200);
+      return '<button type="button" class="chip'+(active?" active":"")+'" data-action="uc-preset" data-preset="'+p[0]+'"><span class="dotc" style="background:'+p[2]+'"></span>'+p[1]+'</button>';
+    }).join("");
+    return backBtn() + '<div class="heading">Lighting</div>' +
+      '<p class="kicker">Lutron dimmers and the Goodlite RGB+CCT under-counter strip.</p>' +
+      lightRow("ceiling","Ceiling","light.cabana_ceiling") +
+      lightRow("sconces","Sconces","light.cabana_sconces") +
+      lightRow("pendants","Pendants","light.cabana_pendants") +
+      lightRow("landscape","Landscape","light.cabana_landscape") +
+      '<div class="card">' +
+        '<div class="row"><div class="sw '+(on?"on light":"")+'" style="'+(on?"background:"+rgbCss(col)+";color:#111":"")+'">━</div>' +
+        '<div class="meta"><div class="n">Under-counter LED</div><div class="e">light.cabana_under_counter</div>' +
+        '<div class="s">' + (on ? ("RGB+CCT · On · " + u.bri + "% · " + (u.mode==="ct"? u.kelvin+" K" : "Color")) : "Off") + '</div></div>' +
+        tog(on, "toggle-under") + '</div>' +
+        '<div class="wheel-wrap"><div class="wheel" id="color-wheel" data-action="uc-wheel">' +
+          '<div class="hub" style="background:'+rgbCss(col)+'"></div>' +
+          '<div class="handle" style="left:'+hp.x+'px;top:'+hp.y+'px;background:'+rgbCss(col)+'"></div>' +
+        '</div></div>' +
+        range("uc-bri", u.bri, 0, 100, "") +
+        '<div class="slider"><input type="range" class="ct-range" min="2200" max="6500" step="50" value="'+(u.mode==="ct"?u.kelvin:2700)+'" data-action="uc-kelvin"><span class="pct" style="width:48px">'+(u.mode==="ct"?u.kelvin:"—")+'K</span></div>' +
+        '<div class="btns c3" style="margin-top:10px">'+presets+'</div>' +
+      '</div>' +
+      '<p class="note">Color wheel and RGB presets use rgb color. Warm / Cool white use color temperature (2700 K / 6500 K). In the live home, this strip needs a Milight-compatible bridge or a Wi-Fi controller such as a Shelly RGBW.</p>';
+  }
+
+  function viewHeat() {
+    const n = heatersOnCount();
+    const rem = heaterRemaining();
+    const rows = [1,2,3].map(function (i) {
+      const on = state.heaters[i];
+      return '<div class="card"><div class="row"><div class="sw '+(on?"on heat":"")+'" >♨️</div>' +
+        '<div class="meta"><div class="n">Heater '+i+'</div><div class="e">switch.cabana_heater_'+i+'</div>' +
+        '<div class="s">'+(on?"On":"Off")+'</div></div>' +
+        tog(on, "toggle-heater", 'data-id="'+i+'"') + '</div></div>';
+    }).join("");
+    return backBtn() + '<div class="heading">Heaters</div>' +
+      '<p class="kicker">Three Bromic patio heaters. '+(n? n+" on.":"All off.")+'</p>' +
+      rows +
+      '<div class="btns c2">' +
+        '<button type="button" class="chip" data-action="scene" data-scene="heatup">Heat Up</button>' +
+        '<button type="button" class="chip danger" data-action="heaters-off">All heaters off</button>' +
+      '</div>' +
+      (rem !== null ? '<p class="note countdown">Safety auto-off in '+fmtRemain(rem)+' (3-hour timer)</p>' :
+        '<p class="note">A safety timer turns all heaters off after 3 hours. The countdown starts when the first heater is turned on.</p>');
+  }
+
+  function viewFan() {
+    const p = state.fan.pct;
+    const spd = !p ? "off" : p<=33?"low":p<=66?"med":"high";
+    function fb(name, pct) {
+      const a = (name==="Off" && !p) || (name==="Low" && spd==="low") || (name==="Med" && spd==="med") || (name==="High" && spd==="high");
+      return '<button type="button" class="chip'+(a?" active":"")+'" data-action="fan" data-pct="'+pct+'">'+name+'</button>';
+    }
+    return backBtn() + '<div class="heading">Ceiling fan</div>' +
+      '<div class="card"><div class="row"><div class="sw '+(p?"on cool":"")+'">🌀</div>' +
+      '<div class="meta"><div class="n">Ceiling fan</div><div class="e">fan.cabana_fan</div>' +
+      '<div class="s">'+fanLabel()+'</div></div></div>' +
+      range("fan-slider", p, 0, 100, "") +
+      '<div class="btns c4" style="margin-top:10px">'+fb("Off",0)+fb("Low",33)+fb("Med",66)+fb("High",100)+'</div>' +
+      '<div class="btns c2" style="margin-top:8px">' +
+        '<button type="button" class="chip'+(state.fan.dir==="forward"?" active":"")+'" data-action="fan-dir" data-dir="forward">Forward</button>' +
+        '<button type="button" class="chip'+(state.fan.dir==="reverse"?" active":"")+'" data-action="fan-dir" data-dir="reverse">Reverse</button>' +
+      '</div></div>' +
+      '<p class="note">Off / Low 33% / Med 66% / High 100%. Direction is available when the fan supports it.</p>';
+  }
+
+  function viewTv() {
+    const t = state.tv;
+    const src = SOURCES.map(function (s) {
+      return '<button type="button" class="chip'+(t.source===s?" active":"")+'" data-action="tv-source" data-source="'+s+'">'+s+'</button>';
+    }).join("");
+    return backBtn() + '<div class="heading">TV</div>' +
+      '<p class="kicker">One Samsung TV. The Sonos Beam is its soundbar — not a second TV.</p>' +
+      '<div class="card"><div class="row"><div class="sw '+(t.on?"on cool":"")+'">📺</div>' +
+      '<div class="meta"><div class="n">Samsung</div><div class="e">media_player.cabana_samsung_tv</div>' +
+      '<div class="s">'+(t.on?("On · "+t.source+(t.mute?" · ":" · Vol "+t.volume)):"Off")+(t.mute?' <span class="muted-tag">Muted</span>':'')+'</div></div>' +
+      tog(t.on, "tv-power") + '</div>' +
+      '<div class="btns c4" style="margin-top:10px">'+src+'</div>' +
+      range("tv-vol", t.volume, 0, 100, "") +
+      '<div class="btns c2" style="margin-top:8px">' +
+        '<button type="button" class="chip'+(t.mute?" active":"")+'" data-action="tv-mute">'+(t.mute?"Unmute":"Mute")+'</button>' +
+        '<button type="button" class="chip" data-action="tv-power">'+(t.on?"Power off":"Power on")+'</button>' +
+      '</div></div>' +
+      '<div class="card"><div class="row"><div class="sw '+(state.beam.playing?"on cool":"")+'">▬</div>' +
+      '<div class="meta"><div class="n">TV Sound (Beam)</div><div class="e">media_player.outdoor_tv</div>' +
+      '<div class="s">'+(state.beam.playing?"Playing":"Idle")+(state.grouped?" · grouped":"")+' · Vol '+state.beam.volume+'</div></div>' +
+      '</div>' +
+      '<div class="btns c2">'+
+        '<button type="button" class="chip'+(state.beam.playing?" active":"")+'" data-action="beam-play">'+(state.beam.playing?"Pause":"Play")+'</button>' +
+        '<button type="button" class="chip" data-action="nav" data-view="music">Open speakers →</button>' +
+      '</div>' +
+      range("beam-vol", state.beam.volume, 0, 100, "") +
+      '</div>' +
+      '<p class="note">Turning the TV on starts the Beam (HDMI-ARC) and auto-groups the four Outdoor Living amps. In the live home, amps ungroup 5 minutes after the Beam goes idle.</p>';
+  }
+
+  function viewMusic() {
+    const amps = [1,2,3,4].map(function (i) {
+      return '<div class="card"><div class="row"><div class="sw '+(state.grouped&&state.beam.playing?"on cool":"")+'">🔊</div>' +
+        '<div class="meta"><div class="n">Outdoor Living '+i+'</div><div class="e">media_player.outdoor_living_'+i+'</div>' +
+        '<div class="s">'+(state.grouped?(state.beam.playing?"Playing · grouped to Beam":"Grouped")+" · Vol "+state.amps[i]:"Not grouped · Vol "+state.amps[i])+'</div></div></div>' +
+        range("amp-vol", state.amps[i], 0, 100, 'data-id="'+i+'"') +
+        '</div>';
+    }).join("");
+    const master = Math.round((state.beam.volume + state.amps[1]+state.amps[2]+state.amps[3]+state.amps[4]) / 5);
+    return backBtn() + '<div class="heading">Music / Speakers</div>' +
+      '<div class="card"><div class="row"><div class="sw '+(state.beam.playing?"on cool":"")+'">▬</div>' +
+      '<div class="meta"><div class="n">TV Sound (Beam)</div><div class="e">media_player.outdoor_tv</div>' +
+      '<div class="s">'+(state.beam.playing?"Playing":"Idle")+(state.grouped?" · grouped":"")+'</div></div></div>' +
+      '<div class="btns c2" style="margin-top:8px">' +
+        '<button type="button" class="chip'+(state.beam.playing?" active":"")+'" data-action="beam-play">'+(state.beam.playing?"Pause":"Play")+'</button>' +
+        '<button type="button" class="chip" data-action="'+(state.grouped?"ungroup":"group")+'">'+(state.grouped?"Ungroup":"Group all speakers")+'</button>' +
+      '</div>' +
+      '<div class="s" style="margin-top:10px;color:var(--muted);font-size:12px">Master volume (Beam + all four amps)</div>' +
+      range("master-vol", master, 0, 100, "") +
+      range("beam-vol", state.beam.volume, 0, 100, "") +
+      '<div class="e" style="margin-top:4px">Beam volume</div>' +
+      '</div>' +
+      '<div class="btns c2"><button type="button" class="chip'+(state.grouped?" active":"")+'" data-action="group">Group all speakers</button>' +
+      '<button type="button" class="chip" data-action="ungroup">Ungroup</button></div>' +
+      amps +
+      '<p class="note"><strong>Group all speakers</strong> joins Outdoor Living 1–4 to the Beam. Pressing Play (or turning the TV on) auto-groups them the same way. In the live home, they ungroup 5 minutes after the Beam goes idle or off.</p>';
+  }
+
+  function viewPool() {
+    const p = state.pool;
+    const modes = MODES.map(function (m) {
+      return '<button type="button" class="chip'+(p.mode===m[0]&&p.light?" active":"")+'" data-action="pool-mode" data-mode="'+m[0]+'"><span class="dotc" style="background:'+m[2]+'"></span>'+m[1]+'</button>';
+    }).join("");
+    return backBtn() + '<div class="heading">Pool / Spa</div>' +
+      '<p class="kicker">Pentair ScreenLogic · system Pentair: 16-58-FE · firmware 5.2</p>' +
+      '<div class="card"><div class="row"><div class="sw '+(p.light?"on light":"")+'">💡</div>' +
+      '<div class="meta"><div class="n">Pool light</div><div class="e">light.screenlogic_pool_light</div>' +
+      '<div class="s">'+(p.light?("On · IntelliBrite · "+p.mode):"Off")+'</div></div>' +
+      tog(p.light, "pool-light") + '</div></div>' +
+      '<div class="heading sub">IntelliBrite color mode</div>' +
+      '<div class="btns c4">'+modes+'</div>' +
+      '<p class="note">Color modes call the ScreenLogic set_color_mode action on the gateway (Party, Romance, Caribbean, American, Sunset, Royal, Blue, Green, Red, White, Magenta).</p>' +
+      '<div class="heading sub">Temperatures</div>' +
+      '<div class="grid2 two">' +
+        tempCard("Pool", "sensor.screenlogic_pool_temperature", p.poolTemp+"°F", "🏊", true) +
+        tempCard("Spa", "sensor.screenlogic_spa_temperature", p.spa ? (p.spaTemp+"°F") : "— · Spa off", "♨️", p.spa) +
+        tempCard("Air", "sensor.screenlogic_pool_air_temperature", p.airTemp+"°F", "🌡️", true) +
+      '</div>' +
+      '<div class="heading sub">Heater</div>' +
+      '<div class="card"><div class="thermo"><div class="dial"><div class="big">'+p.setpoint+'°</div><div class="sm">Setpoint</div></div>' +
+        '<div class="meta"><div class="n">Pool heater</div><div class="e">climate.screenlogic_pool_heater</div>' +
+        '<div class="s">Heat · Current '+p.poolTemp+'°F</div>' +
+        '<div class="stepper">' +
+          '<button type="button" data-action="setpoint" data-delta="-1">−</button>' +
+          '<button type="button" data-action="setpoint" data-delta="1">+</button>' +
+        '</div></div></div></div>' +
+      '<div class="heading sub">Circuits</div>' +
+      '<div class="card"><div class="row"><div class="sw '+(p.spa?"on heat":"")+'">♨️</div>' +
+      '<div class="meta"><div class="n">Spa</div><div class="e">switch.screenlogic_spa</div><div class="s">'+(p.spa?"On":"Off")+'</div></div>' +
+      tog(p.spa, "spa") + '</div></div>' +
+      '<div class="card"><div class="row"><div class="sw '+(p.pump?"on cool":"")+'">💧</div>' +
+      '<div class="meta"><div class="n">Pool pump</div><div class="e">switch.screenlogic_pool_pump</div>' +
+      '<div class="s">'+(p.pump?"On · status only (not toggled from this demo)":"Off")+'</div></div></div></div>' +
+      '<p class="note">The pump is shown for status and is not toggled here, so it cannot be turned off by accident. Scenes may turn pool lights on or off; they never stop the pump or spa. All Off does not stop the pump or spa.</p>';
+  }
+  function tempCard(name, entity, value, emoji, on) {
+    return '<div class="card"><div class="row"><div class="sw '+(on?"on cool":"")+'">'+emoji+'</div>' +
+      '<div class="meta"><div class="n">'+name+'</div><div class="e">'+entity+'</div><div class="s">'+value+'</div></div></div></div>';
+  }
+
+  const VIEWS = { home: viewHome, lighting: viewLighting, heat: viewHeat, fan: viewFan, tv: viewTv, music: viewMusic, pool: viewPool };
+
+  function currentView() {
+    const h = (location.hash || "#home").replace(/^#/, "") || "home";
+    return VIEWS[h] ? h : "home";
+  }
+
+  function render(opts) {
+    opts = opts || {};
+    const app = document.getElementById("app");
+    const view = currentView();
+    app.innerHTML = VIEWS[view]();
+    app.className = "app view-enter";
+    if (opts.flash) {
+      app.classList.add("scene-flash");
+      setTimeout(function () { app.classList.remove("scene-flash"); }, 600);
+    }
+    const titles = { home:"Cabana", lighting:"Lighting", heat:"Heat", fan:"Fan", tv:"TV", music:"Music", pool:"Pool / Spa" };
+    document.title = "Firmus Electronics – Barlow Cabana" + (view!=="home" ? " · " + titles[view] : "");
+  }
+
+  /* ---------- events ---------- */
+  function onAction(action, el, ev) {
+    const ds = el.dataset || {};
+    switch (action) {
+      case "nav":
+        location.hash = ds.view || "home";
+        return;
+      case "scene":
+        applyScene(ds.scene);
+        return;
+      case "toggle-light": {
+        const L = state.lights[ds.id];
+        L.on = !L.on;
+        if (L.on && !L.bri) L.bri = 80;
+        state.lastScene = null; save(); render(); return;
+      }
+      case "bri": return; // handled on input
+      case "toggle-under":
+        state.under.on = !state.under.on;
+        if (state.under.on && !state.under.bri) state.under.bri = 80;
+        state.lastScene = null; save(); render(); return;
+      case "uc-preset": {
+        const p = PRESETS[ds.preset];
+        if (!p) return;
+        state.under.on = true;
+        state.under.mode = p.mode;
+        if (p.kelvin) state.under.kelvin = p.kelvin;
+        if (p.rgb) state.under.rgb = p.rgb.slice();
+        if (!state.under.bri) state.under.bri = 100;
+        state.lastScene = null; save(); render(); return;
+      }
+      case "toggle-heater":
+        setHeater(+ds.id, !state.heaters[+ds.id]);
+        save(); render(); return;
+      case "heaters-off":
+        allHeaters(false); state.lastScene = null; save(); toast("All heaters off"); render(); return;
+      case "fan":
+        state.fan.pct = +ds.pct; state.lastScene = null; save(); render(); return;
+      case "fan-dir":
+        state.fan.dir = ds.dir; state.lastScene = null; save(); render(); return;
+      case "tv-power":
+        setTv(!state.tv.on); state.lastScene = null; save(); render(); return;
+      case "tv-source":
+        state.tv.source = ds.source; if (!state.tv.on) setTv(true);
+        state.lastScene = null; save(); render(); return;
+      case "tv-mute":
+        state.tv.mute = !state.tv.mute; state.lastScene = null; save(); render(); return;
+      case "beam-play":
+        setBeamPlaying(!state.beam.playing, true);
+        state.lastScene = null; save(); render(); return;
+      case "group":
+        state.grouped = true; save(); toast("Speakers grouped to the Beam"); render(); return;
+      case "ungroup":
+        state.grouped = false; save(); toast("Speakers ungrouped"); render(); return;
+      case "pool-light":
+        state.pool.light = !state.pool.light; state.lastScene = null; save(); render(); return;
+      case "pool-mode":
+        state.pool.mode = ds.mode; state.pool.light = true; state.lastScene = null; save(); render(); return;
+      case "spa":
+        state.pool.spa = !state.pool.spa; state.lastScene = null; save(); render(); return;
+      case "setpoint": {
+        const next = state.pool.setpoint + (+ds.delta);
+        state.pool.setpoint = Math.max(65, Math.min(104, next));
+        save(); render(); return;
+      }
+      default: return;
+    }
+  }
+
+  function onInput(el) {
+    const action = el.dataset.action;
+    const val = +el.value;
+    const label = el.parentElement && el.parentElement.querySelector(".pct");
+    if (action === "bri") {
+      const L = state.lights[el.dataset.id];
+      L.bri = val; L.on = val > 0; state.lastScene = null; save();
+      if (label) label.textContent = val + "%";
+      const s = el.closest(".card") && el.closest(".card").querySelector(".s");
+      if (s) s.textContent = val > 0 ? ("On · " + val + "%") : "Off";
+      return;
+    }
+    if (action === "uc-bri") {
+      state.under.bri = val; state.under.on = val > 0; state.lastScene = null; save();
+      if (label) label.textContent = val + "%";
+      return;
+    }
+    if (action === "uc-kelvin") {
+      state.under.kelvin = val; state.under.mode = "ct"; state.under.on = true; state.lastScene = null; save();
+      if (label) label.textContent = val + "K";
+      return;
+    }
+    if (action === "fan-slider") {
+      state.fan.pct = val; state.lastScene = null; save();
+      if (label) label.textContent = val + "%";
+      return;
+    }
+    if (action === "tv-vol") {
+      state.tv.volume = val; if (val > 0) state.tv.mute = false; state.lastScene = null; save();
+      if (label) label.textContent = val + "%";
+      return;
+    }
+    if (action === "beam-vol") {
+      state.beam.volume = val; state.lastScene = null; save();
+      if (label) label.textContent = val + "%";
+      return;
+    }
+    if (action === "amp-vol") {
+      state.amps[+el.dataset.id] = val; state.lastScene = null; save();
+      if (label) label.textContent = val + "%";
+      return;
+    }
+    if (action === "master-vol") {
+      state.beam.volume = val;
+      [1,2,3,4].forEach(function (i) { state.amps[i] = val; });
+      state.lastScene = null; save();
+      if (label) label.textContent = val + "%";
+      // refresh other sliders later on change
+      return;
+    }
+  }
+
+  function hueToRgb(h) {
+    const s = 1, l = 0.5;
+    const c = (1 - Math.abs(2*l - 1)) * s;
+    const hp = h / 60;
+    const x = c * (1 - Math.abs(hp % 2 - 1));
+    let r=0,g=0,b=0;
+    if (hp < 1) { r=c; g=x; }
+    else if (hp < 2) { r=x; g=c; }
+    else if (hp < 3) { g=c; b=x; }
+    else if (hp < 4) { g=x; b=c; }
+    else if (hp < 5) { r=x; b=c; }
+    else { r=c; b=x; }
+    const m = l - c/2;
+    return [Math.round((r+m)*255), Math.round((g+m)*255), Math.round((b+m)*255)];
+  }
+  function onWheel(ev, el) {
+    ev.preventDefault();
+    const r = el.getBoundingClientRect();
+    const pt = ev.touches ? ev.touches[0] : ev;
+    const x = pt.clientX - r.left - r.width/2;
+    const y = pt.clientY - r.top - r.height/2;
+    const dist = Math.sqrt(x*x + y*y);
+    if (dist < r.width * 0.18 || dist > r.width * 0.52) return;
+    let hue = Math.atan2(x, -y) * 180 / Math.PI;
+    if (hue < 0) hue += 360;
+    state.under.rgb = hueToRgb(hue);
+    state.under.mode = "rgb";
+    state.under.on = true;
+    if (!state.under.bri) state.under.bri = 100;
+    state.lastScene = null;
+    save();
+    render();
+  }
+
+  const app = document.getElementById("app");
+  app.addEventListener("click", function (ev) {
+    const el = ev.target.closest("[data-action]");
+    if (!el) return;
+    if (el.dataset.action === "uc-wheel") return;
+    if (el.tagName === "INPUT") return;
+    onAction(el.dataset.action, el, ev);
+  });
+  app.addEventListener("input", function (ev) {
+    if (ev.target && ev.target.dataset && ev.target.dataset.action) onInput(ev.target);
+  });
+  app.addEventListener("change", function (ev) {
+    if (ev.target && ev.target.dataset && ev.target.dataset.action === "master-vol") render();
+    if (ev.target && ev.target.dataset && ev.target.dataset.action === "fan-slider") render();
+    if (ev.target && ev.target.dataset && ev.target.dataset.action === "uc-kelvin") render();
+    if (ev.target && ev.target.dataset && ev.target.dataset.action === "uc-bri") render();
+  });
+  let wheelDown = false;
+  app.addEventListener("pointerdown", function (ev) {
+    const el = ev.target.closest("[data-action=uc-wheel]");
+    if (!el) return;
+    wheelDown = true;
+    try { el.setPointerCapture(ev.pointerId); } catch (e) {}
+    onWheel(ev, el);
+  });
+  app.addEventListener("pointermove", function (ev) {
+    if (!wheelDown) return;
+    const el = ev.target.closest("[data-action=uc-wheel]") || document.getElementById("color-wheel");
+    if (el) onWheel(ev, el);
+  });
+  app.addEventListener("pointerup", function () { wheelDown = false; });
+  app.addEventListener("pointercancel", function () { wheelDown = false; });
+
+  document.getElementById("reset-link").addEventListener("click", resetDemo);
+  window.addEventListener("hashchange", function () { render(); });
+
+  setInterval(tickHeaters, 1000);
+
+  /* ---------- autotest ---------- */
+  window.__cabanaDemo = { getState: function(){ return state; }, applyScene: applyScene, reset: resetDemo, defaults: defaults };
+
+  function autotest() {
+    document.body.classList.add("autotest");
+    const errors = [];
+    window.addEventListener("error", function (e) { errors.push(String(e.message || e)); });
+    window.addEventListener("unhandledrejection", function (e) { errors.push(String(e.reason || e)); });
+    const results = [];
+    function assert(cond, name) { results.push({ name: name, ok: !!cond }); if (!cond) errors.push("FAIL " + name); }
+    try {
+      localStorage.removeItem(STORE);
+      state = defaults();
+      applyScene("entertain");
+      assert(state.lights.ceiling.bri === 100 && state.lights.ceiling.on, "entertain ceiling 100");
+      assert(state.lights.sconces.bri === 80, "entertain sconces 80");
+      assert(state.under.kelvin === 3500 && state.under.on, "entertain under 3500K");
+      assert(state.fan.pct === 66, "entertain fan 66");
+      assert(state.pool.light && state.pool.mode === "party", "entertain pool party");
+      applyScene("party");
+      assert(state.under.mode === "rgb" && state.under.rgb[0] === 160, "party under purple");
+      assert(state.fan.pct === 80 && state.grouped, "party fan + grouped");
+      applyScene("dinner");
+      assert(state.lights.ceiling.bri === 40 && state.under.kelvin === 2700 && state.under.bri === 50, "dinner levels");
+      applyScene("cozy");
+      assert(state.lights.ceiling.bri === 15 && state.under.kelvin === 2200 && state.fan.pct === 33, "cozy levels");
+      applyScene("movie");
+      assert(state.lights.sconces.on === false && state.tv.on && state.grouped && state.pool.light === false, "movie tv + group + pool off");
+      applyScene("swim");
+      assert(state.pool.mode === "caribbean" && state.pool.light && state.grouped && state.under.rgb[2] === 255, "swim caribbean + blue LED");
+      const hBefore = state.heaters[1];
+      applyScene("heatup");
+      assert(state.heaters[1] && state.heaters[2] && state.heaters[3], "heat up all on");
+      assert(state.heaterOnAt[1], "heat up timer started");
+      applyScene("alloff");
+      assert(!state.lights.ceiling.on && !state.under.on && !state.heaters[1] && state.fan.pct === 0, "all off lights/heat/fan");
+      assert(!state.tv.on && !state.beam.playing && !state.grouped && !state.pool.light, "all off tv/beam/pool light");
+      assert(state.pool.pump === true, "all off leaves pump on");
+      assert(state.pool.spa === false, "spa remains off");
+      // auto-group when beam starts
+      state.grouped = false;
+      setBeamPlaying(true, false);
+      assert(state.grouped && state.beam.playing, "auto-group on play");
+    } catch (e) {
+      errors.push("exception: " + (e && e.stack || e));
+    }
+    const ok = results.every(function (r) { return r.ok; }) && errors.length === 0;
+    const report = { ok: ok, passed: results.filter(function(r){return r.ok;}).length, total: results.length, results: results, errors: errors };
+    document.getElementById("autotest-out").textContent = JSON.stringify(report, null, 2);
+    document.title = (ok ? "AUTOTEST_PASS " : "AUTOTEST_FAIL ") + document.title;
+    console.log("AUTOTEST", report);
+    return report;
+  }
+
+  var preload = /[?&]scene=([a-z]+)/.exec(location.search);
+  if (preload && SCENES[preload[1]] && !/[?&]autotest=1/.test(location.search)) {
+    SCENES[preload[1]].apply();
+    state.lastScene = preload[1];
+    // Do not persist a preload — only interactive use is saved.
+  }
+  if (/[?&]autotest=1/.test(location.search)) {
+    render();
+    setTimeout(autotest, 50);
+  } else {
+    render();
+  }
+})();
+</script>
+</body>
+</html>
