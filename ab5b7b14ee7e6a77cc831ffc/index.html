@@ -241,7 +241,7 @@ body.autotest #autotest-out { display: block; background: #111; color: #9f9; mar
 <script>
 (function () {
   "use strict";
-  const STORE = "firmus-barlow-cabana-demo-v1";
+  const STORE = "firmus-barlow-cabana-demo-v2";
   const THREE_H = 3 * 60 * 60 * 1000;
   const MODES = [
     ["party","Party","#ff4081"],["romance","Romance","#e040fb"],["caribbean","Caribbean","#00bcd4"],
@@ -271,7 +271,7 @@ body.autotest #autotest-out { display: block; background: #111; color: #9f9; mar
       under: { on: false, bri: 100, mode: "ct", kelvin: 2700, rgb: [255,183,77] },
       heaters: { 1: false, 2: false, 3: false },
       heaterOnAt: { 1: null, 2: null, 3: null },
-      fan: { pct: 0, dir: "forward" },
+      fans: { 1: { pct: 0, dir: "forward" }, 2: { pct: 0, dir: "forward" }, 3: { pct: 0, dir: "forward" } },
       tv: { on: false, source: "HDMI 1", volume: 35, mute: false },
       beam: { playing: false, volume: 35 },
       amps: { 1: 35, 2: 35, 3: 35, 4: 35 },
@@ -292,7 +292,13 @@ body.autotest #autotest-out { display: block; background: #111; color: #9f9; mar
       s.under = Object.assign(defaults().under, s.under);
       s.heaters = Object.assign(defaults().heaters, s.heaters);
       s.heaterOnAt = Object.assign(defaults().heaterOnAt, s.heaterOnAt);
-      s.fan = Object.assign(defaults().fan, s.fan);
+      s.fans = { 1: Object.assign({}, defaults().fans[1], (s.fans && s.fans[1]) || {}),
+                  2: Object.assign({}, defaults().fans[2], (s.fans && s.fans[2]) || {}),
+                  3: Object.assign({}, defaults().fans[3], (s.fans && s.fans[3]) || {}) };
+      if (s.fan && typeof s.fan.pct === "number") {
+        // Migrate the old single-fan demo state to all three fans.
+        [1,2,3].forEach(function (i) { s.fans[i] = Object.assign({}, s.fans[i], s.fan); });
+      }
       s.tv = Object.assign(defaults().tv, s.tv);
       s.beam = Object.assign(defaults().beam, s.beam);
       s.amps = Object.assign(defaults().amps, s.amps);
@@ -322,11 +328,39 @@ body.autotest #autotest-out { display: block; background: #111; color: #9f9; mar
   function heatersOnCount() {
     return [1,2,3].filter(function (i) { return state.heaters[i]; }).length;
   }
-  function fanLabel() {
-    if (!state.fan.pct) return "Off";
-    const spd = state.fan.pct <= 33 ? "Low" : state.fan.pct <= 66 ? "Med" : "High";
-    return spd + " · " + state.fan.pct + "% · " + (state.fan.dir === "forward" ? "Forward" : "Reverse");
+  function fanSpeedName(pct) {
+    if (!pct) return "Off";
+    return pct <= 33 ? "Low" : pct <= 66 ? "Med" : "High";
   }
+  function fanLabelOne(f) {
+    if (!f.pct) return "Off";
+    return fanSpeedName(f.pct) + " · " + f.pct + "% · " + (f.dir === "forward" ? "Forward" : "Reverse");
+  }
+  function fansOnCount() {
+    return [1,2,3].filter(function (i) { return state.fans[i].pct > 0; }).length;
+  }
+  function fansSamePct() {
+    return state.fans[1].pct === state.fans[2].pct && state.fans[2].pct === state.fans[3].pct;
+  }
+  function fansSameDir() {
+    return state.fans[1].dir === state.fans[2].dir && state.fans[2].dir === state.fans[3].dir;
+  }
+  function fanHomeLabel() {
+    const n = fansOnCount();
+    if (!n) return "Off";
+    if (fansSamePct() && fansSameDir()) return "All " + fanLabelOne(state.fans[1]);
+    if (fansSamePct()) return n + " of 3 on · " + fanSpeedName(state.fans[1].pct);
+    return n + " of 3 on";
+  }
+  function setFanPct(id, pct) {
+    if (id === "all") [1,2,3].forEach(function (i) { state.fans[i].pct = pct; });
+    else state.fans[id].pct = pct;
+  }
+  function setFanDir(id, dir) {
+    if (id === "all") [1,2,3].forEach(function (i) { state.fans[i].dir = dir; });
+    else state.fans[id].dir = dir;
+  }
+  function setAllFans(pct) { setFanPct("all", pct); }
   function rgbCss(rgb) { return "rgb(" + rgb[0] + "," + rgb[1] + "," + rgb[2] + ")"; }
   function kelvinRgb(k) {
     const t = Math.max(0, Math.min(1, (k - 2200) / (6500 - 2200)));
@@ -393,7 +427,7 @@ body.autotest #autotest-out { display: block; background: #111; color: #9f9; mar
       apply: function () {
         setLights({ ceiling:100, sconces:80, pendants:70, landscape:100 });
         setUnder({ on:true, bri:100, mode:"ct", kelvin:3500 });
-        state.fan.pct = 66;
+        setAllFans(66);
         state.pool.light = true; state.pool.mode = "party";
       }
     },
@@ -402,7 +436,7 @@ body.autotest #autotest-out { display: block; background: #111; color: #9f9; mar
       apply: function () {
         setLights({ ceiling:100, sconces:90, pendants:80, landscape:100 });
         setUnder({ on:true, bri:100, mode:"rgb", rgb:[160,0,255] });
-        state.fan.pct = 80;
+        setAllFans(80);
         state.grouped = true;
         state.pool.light = true; state.pool.mode = "party";
       }
@@ -412,7 +446,7 @@ body.autotest #autotest-out { display: block; background: #111; color: #9f9; mar
       apply: function () {
         setLights({ ceiling:40, sconces:35, pendants:45, landscape:60 });
         setUnder({ on:true, bri:50, mode:"ct", kelvin:2700 });
-        state.fan.pct = 33;
+        setAllFans(33);
       }
     },
     cozy: {
@@ -420,7 +454,7 @@ body.autotest #autotest-out { display: block; background: #111; color: #9f9; mar
       apply: function () {
         setLights({ ceiling:15, sconces:20, pendants:25, landscape:30 });
         setUnder({ on:true, bri:25, mode:"ct", kelvin:2200 });
-        state.fan.pct = 33;
+        setAllFans(33);
       }
     },
     movie: {
@@ -428,7 +462,7 @@ body.autotest #autotest-out { display: block; background: #111; color: #9f9; mar
       apply: function () {
         setLights({ ceiling:10, sconces:0, pendants:0, landscape:0 });
         setUnder({ on:true, bri:15, mode:"ct", kelvin:2700 });
-        state.fan.pct = 33;
+        setAllFans(33);
         setTv(true);
         state.grouped = true;
         state.pool.light = false;
@@ -439,7 +473,7 @@ body.autotest #autotest-out { display: block; background: #111; color: #9f9; mar
       apply: function () {
         setLights({ ceiling:30, sconces:40, pendants:0, landscape:80 });
         setUnder({ on:true, bri:80, mode:"rgb", rgb:[0,80,255] });
-        state.fan.pct = 66;
+        setAllFans(66);
         state.grouped = true;
         state.pool.light = true; state.pool.mode = "caribbean";
       }
@@ -454,7 +488,7 @@ body.autotest #autotest-out { display: block; background: #111; color: #9f9; mar
         setLights({ ceiling:0, sconces:0, pendants:0, landscape:0 });
         setUnder({ on:false, bri:0 });
         allHeaters(false);
-        state.fan.pct = 0;
+        setAllFans(0);
         state.tv.on = false;
         state.beam.playing = false;
         state.grouped = false;
@@ -514,7 +548,7 @@ body.autotest #autotest-out { display: block; background: #111; color: #9f9; mar
 
   function viewHome() {
     const nL = lightsOnCount(), nH = heatersOnCount();
-    const tvOn = state.tv.on, fanOn = state.fan.pct > 0;
+    const tvOn = state.tv.on, fanOn = fansOnCount() > 0;
     const music = state.beam.playing ? (state.grouped ? "Playing · grouped" : "Playing") : (state.grouped ? "Idle · grouped" : "Idle");
     const spa = state.pool.spa ? "Spa on" : "Spa off";
     function tile(view, cls, emoji, name, st, hint) {
@@ -536,7 +570,7 @@ body.autotest #autotest-out { display: block; background: #111; color: #9f9; mar
         tile("lighting", nL?"light-on":"", "💡", "Lighting", nL ? ("On · " + nL + " light" + (nL>1?"s":"")) : "Off", "Lutron + under-counter LED") +
         tile("pool", "on", "🏊", "Pool / Spa", state.pool.poolTemp + "°F · " + spa, "Pentair ScreenLogic") +
         tile("heat", nH?"heat-on":"", "🔥", "Heat", nH ? (nH + " of 3 on") : "Off", "Bromic patio heaters") +
-        tile("fan", fanOn?"on":"", "🌀", "Fan", fanLabel(), "Speed and direction") +
+        tile("fan", fanOn?"on":"", "🌀", "Fan", fanHomeLabel(), "3 Pavilion fans") +
         tile("music", (state.beam.playing||state.grouped)?"on":"", "🔊", "Music / Speakers", music, "Beam + four Outdoor Living amps") +
       '</div>' +
       '<p class="footer-note">Simulated cabana controls. Not connected to the live system.</p>';
@@ -635,23 +669,47 @@ body.autotest #autotest-out { display: block; background: #111; color: #9f9; mar
   }
 
   function viewFan() {
-    const p = state.fan.pct;
-    const spd = !p ? "off" : p<=33?"low":p<=66?"med":"high";
-    function fb(name, pct) {
-      const a = (name==="Off" && !p) || (name==="Low" && spd==="low") || (name==="Med" && spd==="med") || (name==="High" && spd==="high");
-      return '<button type="button" class="chip'+(a?" active":"")+'" data-action="fan" data-pct="'+pct+'">'+name+'</button>';
+    function speedBtns(id, pct) {
+      const known = pct >= 0;
+      const spd = !known ? "" : !pct ? "off" : pct<=33?"low":pct<=66?"med":"high";
+      function fb(name, p) {
+        const a = known && ((name==="Off" && !pct) || (name==="Low" && spd==="low") || (name==="Med" && spd==="med") || (name==="High" && spd==="high"));
+        return '<button type="button" class="chip'+(a?" active":"")+'" data-action="fan" data-id="'+id+'" data-pct="'+p+'">'+name+'</button>';
+      }
+      return fb("Off",0)+fb("Low",33)+fb("Med",66)+fb("High",100);
     }
-    return backBtn() + '<div class="heading">Ceiling fan</div>' +
-      '<div class="card"><div class="row"><div class="sw '+(p?"on cool":"")+'">🌀</div>' +
-      '<div class="meta"><div class="n">Ceiling fan</div><div class="e">fan.cabana_fan</div>' +
-      '<div class="s">'+fanLabel()+'</div></div></div>' +
-      range("fan-slider", p, 0, 100, "") +
-      '<div class="btns c4" style="margin-top:10px">'+fb("Off",0)+fb("Low",33)+fb("Med",66)+fb("High",100)+'</div>' +
-      '<div class="btns c2" style="margin-top:8px">' +
-        '<button type="button" class="chip'+(state.fan.dir==="forward"?" active":"")+'" data-action="fan-dir" data-dir="forward">Forward</button>' +
-        '<button type="button" class="chip'+(state.fan.dir==="reverse"?" active":"")+'" data-action="fan-dir" data-dir="reverse">Reverse</button>' +
-      '</div></div>' +
-      '<p class="note">Off / Low 33% / Med 66% / High 100%. Direction is available when the fan supports it.</p>';
+    function dirBtns(id, dir, armed) {
+      function db(name, d) {
+        const a = armed && dir === d;
+        return '<button type="button" class="chip'+(a?" active":"")+'" data-action="fan-dir" data-id="'+id+'" data-dir="'+d+'">'+name+'</button>';
+      }
+      return db("Forward","forward")+db("Reverse","reverse");
+    }
+    function fanCard(id, name, entity, f) {
+      const p = f.pct;
+      return '<div class="card"><div class="row"><div class="sw '+(p?"on cool":"")+'">🌀</div>' +
+        '<div class="meta"><div class="n">'+name+'</div><div class="e">'+entity+'</div>' +
+        '<div class="s">'+fanLabelOne(f)+'</div></div></div>' +
+        range("fan-slider", p, 0, 100, 'data-id="'+id+'"') +
+        '<div class="btns c4" style="margin-top:10px">'+speedBtns(id, p)+'</div>' +
+        '<div class="btns c2" style="margin-top:8px">'+dirBtns(id, f.dir, true)+'</div></div>';
+    }
+    const n = fansOnCount();
+    const allSummary = fanHomeLabel();
+    const allPctShow = fansSamePct() ? state.fans[1].pct : 0;
+    let allCard = '<div class="card"><div class="row"><div class="sw '+(n?"on cool":"")+'">🌀</div>' +
+      '<div class="meta"><div class="n">All fans</div><div class="e">fan.pavilion_fans</div>' +
+      '<div class="s">'+esc(allSummary)+'</div></div></div>' +
+      range("fan-slider", allPctShow, 0, 100, 'data-id="all"') +
+      '<div class="btns c4" style="margin-top:10px">'+speedBtns("all", fansSamePct() ? state.fans[1].pct : -1)+'</div>' +
+      '<div class="btns c2" style="margin-top:8px">'+dirBtns("all", state.fans[1].dir, fansSameDir())+'</div></div>';
+    return backBtn() + '<div class="heading">Pavilion fans</div>' +
+      '<p class="kicker">Three Big Ass Fans. '+(n? n+" on.":"All off.")+'</p>' +
+      allCard +
+      fanCard(1, "Pavilion Fan 1", "fan.pavilion_fan_1", state.fans[1]) +
+      fanCard(2, "Pavilion Fan 2", "fan.pavilion_fan_2", state.fans[2]) +
+      fanCard(3, "Pavilion Fan 3", "fan.pavilion_fan_3", state.fans[3]) +
+      '<p class="note">Off / Low 33% / Med 66% / High 100%. All fans sets all three. Direction is available when the fan supports it. In the live home, these connect through Home Assistant&apos;s built-in Big Ass Fans integration.</p>';
   }
 
   function viewTv() {
@@ -812,9 +870,9 @@ body.autotest #autotest-out { display: block; background: #111; color: #9f9; mar
       case "heaters-off":
         allHeaters(false); state.lastScene = null; save(); toast("All heaters off"); render(); return;
       case "fan":
-        state.fan.pct = +ds.pct; state.lastScene = null; save(); render(); return;
+        setFanPct(ds.id || "all", +ds.pct); state.lastScene = null; save(); render(); return;
       case "fan-dir":
-        state.fan.dir = ds.dir; state.lastScene = null; save(); render(); return;
+        setFanDir(ds.id || "all", ds.dir); state.lastScene = null; save(); render(); return;
       case "tv-power":
         setTv(!state.tv.on); state.lastScene = null; save(); render(); return;
       case "tv-source":
@@ -867,7 +925,7 @@ body.autotest #autotest-out { display: block; background: #111; color: #9f9; mar
       return;
     }
     if (action === "fan-slider") {
-      state.fan.pct = val; state.lastScene = null; save();
+      setFanPct(el.dataset.id || "all", val); state.lastScene = null; save();
       if (label) label.textContent = val + "%";
       return;
     }
@@ -985,15 +1043,15 @@ body.autotest #autotest-out { display: block; background: #111; color: #9f9; mar
       assert(state.lights.ceiling.bri === 100 && state.lights.ceiling.on, "entertain ceiling 100");
       assert(state.lights.sconces.bri === 80, "entertain sconces 80");
       assert(state.under.kelvin === 3500 && state.under.on, "entertain under 3500K");
-      assert(state.fan.pct === 66, "entertain fan 66");
+      assert(state.fans[1].pct === 66 && state.fans[2].pct === 66 && state.fans[3].pct === 66, "entertain all fans 66");
       assert(state.pool.light && state.pool.mode === "party", "entertain pool party");
       applyScene("party");
       assert(state.under.mode === "rgb" && state.under.rgb[0] === 160, "party under purple");
-      assert(state.fan.pct === 80 && state.grouped, "party fan + grouped");
+      assert(state.fans[1].pct === 80 && state.fans[2].pct === 80 && state.fans[3].pct === 80 && state.grouped, "party all fans + grouped");
       applyScene("dinner");
       assert(state.lights.ceiling.bri === 40 && state.under.kelvin === 2700 && state.under.bri === 50, "dinner levels");
       applyScene("cozy");
-      assert(state.lights.ceiling.bri === 15 && state.under.kelvin === 2200 && state.fan.pct === 33, "cozy levels");
+      assert(state.lights.ceiling.bri === 15 && state.under.kelvin === 2200 && state.fans[1].pct === 33 && state.fans[2].pct === 33 && state.fans[3].pct === 33, "cozy levels");
       applyScene("movie");
       assert(state.lights.sconces.on === false && state.tv.on && state.grouped && state.pool.light === false, "movie tv + group + pool off");
       applyScene("swim");
@@ -1003,7 +1061,7 @@ body.autotest #autotest-out { display: block; background: #111; color: #9f9; mar
       assert(state.heaters[1] && state.heaters[2] && state.heaters[3], "heat up all on");
       assert(state.heaterOnAt[1], "heat up timer started");
       applyScene("alloff");
-      assert(!state.lights.ceiling.on && !state.under.on && !state.heaters[1] && state.fan.pct === 0, "all off lights/heat/fan");
+      assert(!state.lights.ceiling.on && !state.under.on && !state.heaters[1] && state.fans[1].pct === 0 && state.fans[2].pct === 0 && state.fans[3].pct === 0, "all off lights/heat/fan");
       assert(!state.tv.on && !state.beam.playing && !state.grouped && !state.pool.light, "all off tv/beam/pool light");
       assert(state.pool.pump === true, "all off leaves pump on");
       assert(state.pool.spa === false, "spa remains off");
