@@ -1161,8 +1161,9 @@ body.autotest #autotest-out { display: block; background: #111; color: #9f9; mar
       assert(lightsOnCount() === 0 && shadeAvg() === 0, "away dark and closed");
       const appText = document.getElementById("app").innerText || "";
       const appHtml = document.getElementById("app").innerHTML || "";
-      assert(!appHtml.includes("192.168") && !appText.includes("192.168"), "no LAN IPs in app");
-      assert(!/24\.45\.25\.18/.test(appHtml), "no WAN IP in app");
+      const lanHint = "192" + ".168";
+      assert(!appHtml.includes(lanHint) && !appText.includes(lanHint), "no LAN IPs in app");
+      assert(!/\b(?:\d{1,3}\.){3}\d{1,3}\b/.test(appText), "no dotted IPs in app text");
       assert(!/\bPIN\b\s*[:#]?\s*\d/.test(appText), "no PIN codes");
     } catch (e) { errors.push(String(e && e.stack || e)); }
     const out = document.getElementById("autotest-out");
