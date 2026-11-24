@@ -308,6 +308,84 @@ body.autotest #autotest-out { display: block; background: #111; color: #9f9; mar
 
 .tiny { font-size: 11px; color: var(--faint); margin-top: 6px; }
 
+
+/* HA-style picture-entity camera cards (demo placeholders, no live video) */
+.cam-row { display: grid; grid-template-columns: 1fr; gap: 10px; margin: 0 0 18px; }
+@media (min-width: 720px) { .cam-row { grid-template-columns: 1fr 1fr; gap: 12px; } }
+.cam-card {
+  display: block; width: 100%; padding: 0; overflow: hidden; text-align: left;
+  background: #10131a; border: 1px solid var(--border); border-radius: var(--radius);
+  box-shadow: var(--shadow); transition: transform .12s, border-color .15s;
+}
+.cam-card:active { transform: scale(.99); }
+.cam-frame { position: relative; aspect-ratio: 16/9; overflow: hidden; background: #0d1018; }
+.cam-frame svg { width: 100%; height: 100%; display: block; }
+.cam-live {
+  position: absolute; top: 10px; left: 10px; z-index: 2;
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(0,0,0,.62); color: #fff;
+  font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+  border-radius: 999px; padding: 4px 8px;
+}
+.cam-live .pulse {
+  width: 7px; height: 7px; border-radius: 50%; background: #ef5350;
+  box-shadow: 0 0 0 0 rgba(239,83,80,.55);
+  animation: camPulse 1.6s ease-out infinite;
+}
+@keyframes camPulse {
+  0% { box-shadow: 0 0 0 0 rgba(239,83,80,.5); }
+  70% { box-shadow: 0 0 0 6px rgba(239,83,80,0); }
+  100% { box-shadow: 0 0 0 0 rgba(239,83,80,0); }
+}
+.cam-demo-badge {
+  position: absolute; top: 10px; right: 10px; z-index: 2;
+  font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+  color: #ffccbc; background: rgba(62,39,35,.9); border: 1px solid #5d4037;
+  border-radius: 999px; padding: 4px 8px;
+}
+.cam-motion {
+  position: absolute; top: 38px; right: 10px; z-index: 2;
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 10px; font-weight: 700; letter-spacing: .04em;
+  color: #ffe0b2; background: rgba(255,109,0,.32); border: 1px solid rgba(255,109,0,.5);
+  border-radius: 999px; padding: 4px 8px;
+}
+.cam-motion .mdot { width: 6px; height: 6px; border-radius: 50%; background: #ff6d00; }
+.cam-motion.idle {
+  color: #cfd8dc; background: rgba(0,0,0,.45); border-color: rgba(255,255,255,.12);
+}
+.cam-motion.idle .mdot { background: #90a4ae; }
+.cam-bar {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 2;
+  display: flex; align-items: flex-end; justify-content: space-between; gap: 8px;
+  padding: 28px 12px 10px;
+  background: linear-gradient(transparent, rgba(0,0,0,.78));
+  color: #fff; pointer-events: none;
+}
+.cam-bar .cname { font-size: 15px; font-weight: 650; line-height: 1.2; }
+.cam-bar .cmeta { text-align: right; }
+.cam-bar .ctime { font-size: 11px; color: #e0e0e0; font-variant-numeric: tabular-nums; }
+.cam-bar .chint { font-size: 10px; color: #bdbdbd; margin-top: 2px; }
+
+.cam-lb {
+  position: fixed; inset: 0; z-index: 80;
+  background: rgba(0,0,0,.84);
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px 16px 16px;
+}
+.cam-lb[hidden] { display: none !important; }
+.cam-lb-inner { width: min(1100px, 100%); position: relative; }
+.cam-lb-inner .cam-frame {
+  aspect-ratio: 16/9; border-radius: var(--radius);
+  border: 1px solid var(--border); box-shadow: 0 12px 40px rgba(0,0,0,.45);
+}
+.cam-lb-close {
+  position: absolute; top: -42px; right: 0;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 999px; padding: 7px 14px; font-size: 13px; font-weight: 600;
+}
+.cam-lb-note { font-size: 11px; color: #bdbdbd; text-align: center; margin-top: 10px; }
+
 </style>
 
 </head>
@@ -327,6 +405,13 @@ body.autotest #autotest-out { display: block; background: #111; color: #9f9; mar
   </header>
   <main class="app" id="app"></main>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div id="cam-lightbox" class="cam-lb" hidden role="dialog" aria-modal="true" aria-label="Camera preview">
+    <div class="cam-lb-inner">
+      <button type="button" class="cam-lb-close" data-action="cam-close">Close</button>
+      <div class="cam-frame" id="cam-lb-frame"></div>
+      <p class="cam-lb-note">Illustrated demo placeholder — not a live camera feed and not from the house.</p>
+    </div>
+  </div>
   <pre id="autotest-out"></pre>
 <script>
 (function () {
@@ -753,6 +838,69 @@ body.autotest #autotest-out { display: block; background: #111; color: #9f9; mar
     return bits.join(" · ");
   }
 
+
+  const CAMERAS = [
+    { id: "driveway", name: "Driveway", motion: true, art: "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 800 450\" role=\"img\" aria-label=\"Illustrated driveway placeholder, demo only\">\n  <defs>\n    <linearGradient id=\"dw-sky\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\">\n      <stop offset=\"0\" stop-color=\"#0a1424\"/><stop offset=\".55\" stop-color=\"#162236\"/><stop offset=\"1\" stop-color=\"#1c3340\"/>\n    </linearGradient>\n    <linearGradient id=\"dw-pav\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\">\n      <stop offset=\"0\" stop-color=\"#4b5158\"/><stop offset=\"1\" stop-color=\"#2f3338\"/>\n    </linearGradient>\n    <linearGradient id=\"dw-lawn\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\">\n      <stop offset=\"0\" stop-color=\"#1a2c1e\"/><stop offset=\"1\" stop-color=\"#121c14\"/>\n    </linearGradient>\n  </defs>\n  <rect width=\"800\" height=\"450\" fill=\"url(#dw-sky)\"/>\n  <circle cx=\"140\" cy=\"64\" r=\"2\" fill=\"#dfe8f5\" opacity=\".8\"/>\n  <circle cx=\"210\" cy=\"40\" r=\"1.5\" fill=\"#dfe8f5\" opacity=\".7\"/>\n  <circle cx=\"400\" cy=\"52\" r=\"1.4\" fill=\"#dfe8f5\" opacity=\".55\"/>\n  <circle cx=\"520\" cy=\"36\" r=\"1.8\" fill=\"#dfe8f5\" opacity=\".7\"/>\n  <circle cx=\"620\" cy=\"70\" r=\"26\" fill=\"#efe7c8\" opacity=\".92\"/>\n  <circle cx=\"610\" cy=\"66\" r=\"26\" fill=\"#0a1424\" opacity=\".35\"/>\n  <rect x=\"0\" y=\"288\" width=\"800\" height=\"162\" fill=\"url(#dw-lawn)\"/>\n  <polygon points=\"0,288 180,288 80,450 0,450\" fill=\"#152316\"/>\n  <polygon points=\"800,288 560,288 700,450 800,450\" fill=\"#152316\"/>\n  <polygon points=\"250,450 550,450 480,288 320,288\" fill=\"url(#dw-pav)\"/>\n  <polygon points=\"330,300 470,300 500,450 300,450\" fill=\"#3a3f45\" opacity=\".35\"/>\n  <g fill=\"#c5c9ce\" opacity=\".28\">\n    <rect x=\"394\" y=\"310\" width=\"12\" height=\"16\" rx=\"1\"/>\n    <rect x=\"392\" y=\"340\" width=\"16\" height=\"18\" rx=\"1\"/>\n    <rect x=\"388\" y=\"372\" width=\"22\" height=\"20\" rx=\"1\"/>\n    <rect x=\"384\" y=\"406\" width=\"28\" height=\"22\" rx=\"1\"/>\n  </g>\n  <rect x=\"536\" y=\"168\" width=\"230\" height=\"132\" fill=\"#2a313a\"/>\n  <polygon points=\"528,168 651,128 774,168\" fill=\"#1d232b\"/>\n  <rect x=\"572\" y=\"200\" width=\"160\" height=\"100\" fill=\"#171b20\"/>\n  <rect x=\"580\" y=\"208\" width=\"144\" height=\"6\" fill=\"#2c333c\"/>\n  <rect x=\"580\" y=\"228\" width=\"144\" height=\"6\" fill=\"#2c333c\"/>\n  <rect x=\"580\" y=\"248\" width=\"144\" height=\"6\" fill=\"#2c333c\"/>\n  <rect x=\"580\" y=\"268\" width=\"144\" height=\"6\" fill=\"#2c333c\"/>\n  <rect x=\"630\" y=\"248\" width=\"8\" height=\"16\" rx=\"1\" fill=\"#d7b15a\" opacity=\".7\"/>\n  <rect x=\"548\" y=\"188\" width=\"28\" height=\"18\" fill=\"#f0c36a\" opacity=\".8\"/>\n  <rect x=\"726\" y=\"188\" width=\"28\" height=\"18\" fill=\"#f0c36a\" opacity=\".55\"/>\n  <g fill=\"#1a241c\">\n    <ellipse cx=\"70\" cy=\"300\" rx=\"36\" ry=\"10\" opacity=\".35\"/>\n    <path d=\"M70 300 C40 240 30 180 70 140 C110 180 100 240 70 300Z\"/>\n    <path d=\"M118 304 C98 250 96 200 130 168 C150 210 140 260 118 304Z\"/>\n    <ellipse cx=\"730\" cy=\"310\" rx=\"28\" ry=\"8\" opacity=\".3\"/>\n    <path d=\"M730 312 C710 260 708 210 742 178 C760 220 750 270 730 312Z\"/>\n  </g>\n  <g>\n    <rect x=\"300\" y=\"276\" width=\"5\" height=\"22\" fill=\"#2a2a2a\"/>\n    <circle cx=\"302\" cy=\"274\" r=\"5\" fill=\"#f4d27a\" opacity=\".85\"/>\n    <rect x=\"494\" y=\"276\" width=\"5\" height=\"22\" fill=\"#2a2a2a\"/>\n    <circle cx=\"496\" cy=\"274\" r=\"5\" fill=\"#f4d27a\" opacity=\".85\"/>\n  </g>\n  <text x=\"400\" y=\"250\" text-anchor=\"middle\" fill=\"#ffffff\" opacity=\".16\" font-size=\"44\" font-family=\"Arial, Helvetica, sans-serif\" font-weight=\"700\">DEMO</text>\n</svg>" },
+    { id: "front", name: "Front Door / Front of House", motion: false, art: "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 800 450\" role=\"img\" aria-label=\"Illustrated house front placeholder, demo only\">\n  <defs>\n    <linearGradient id=\"fr-sky\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\">\n      <stop offset=\"0\" stop-color=\"#10182b\"/><stop offset=\".6\" stop-color=\"#1c2740\"/><stop offset=\"1\" stop-color=\"#2a3a48\"/>\n    </linearGradient>\n    <linearGradient id=\"fr-lawn\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\">\n      <stop offset=\"0\" stop-color=\"#1b2d20\"/><stop offset=\"1\" stop-color=\"#121c15\"/>\n    </linearGradient>\n  </defs>\n  <rect width=\"800\" height=\"450\" fill=\"url(#fr-sky)\"/>\n  <circle cx=\"680\" cy=\"58\" r=\"20\" fill=\"#efe7c8\" opacity=\".9\"/>\n  <circle cx=\"90\" cy=\"48\" r=\"1.6\" fill=\"#dfe8f5\" opacity=\".75\"/>\n  <circle cx=\"160\" cy=\"30\" r=\"1.2\" fill=\"#dfe8f5\" opacity=\".6\"/>\n  <circle cx=\"300\" cy=\"44\" r=\"1.5\" fill=\"#dfe8f5\" opacity=\".7\"/>\n  <circle cx=\"500\" cy=\"28\" r=\"1.3\" fill=\"#dfe8f5\" opacity=\".55\"/>\n  <rect x=\"0\" y=\"300\" width=\"800\" height=\"150\" fill=\"url(#fr-lawn)\"/>\n  <polygon points=\"250,450 550,450 500,330 300,330\" fill=\"#5a554c\"/>\n  <polygon points=\"310,340 490,340 520,450 280,450\" fill=\"#6a655c\" opacity=\".45\"/>\n  <rect x=\"210\" y=\"150\" width=\"380\" height=\"190\" fill=\"#2c333c\"/>\n  <polygon points=\"190,150 400,78 610,150\" fill=\"#1b222a\"/>\n  <rect x=\"226\" y=\"164\" width=\"78\" height=\"58\" fill=\"#1a1f26\"/>\n  <rect x=\"234\" y=\"172\" width=\"28\" height=\"20\" fill=\"#f0c36a\" opacity=\".88\"/>\n  <rect x=\"268\" y=\"172\" width=\"28\" height=\"20\" fill=\"#f0c36a\" opacity=\".7\"/>\n  <rect x=\"234\" y=\"196\" width=\"28\" height=\"18\" fill=\"#c9a24a\" opacity=\".45\"/>\n  <rect x=\"268\" y=\"196\" width=\"28\" height=\"18\" fill=\"#c9a24a\" opacity=\".3\"/>\n  <rect x=\"496\" y=\"164\" width=\"78\" height=\"58\" fill=\"#1a1f26\"/>\n  <rect x=\"504\" y=\"172\" width=\"28\" height=\"20\" fill=\"#f0c36a\" opacity=\".8\"/>\n  <rect x=\"538\" y=\"172\" width=\"28\" height=\"20\" fill=\"#f0c36a\" opacity=\".55\"/>\n  <rect x=\"504\" y=\"196\" width=\"28\" height=\"18\" fill=\"#c9a24a\" opacity=\".35\"/>\n  <rect x=\"538\" y=\"196\" width=\"28\" height=\"18\" fill=\"#c9a24a\" opacity=\".25\"/>\n  <rect x=\"360\" y=\"230\" width=\"80\" height=\"110\" fill=\"#1a1512\"/>\n  <rect x=\"372\" y=\"248\" width=\"22\" height=\"36\" fill=\"#f4d27a\" opacity=\".8\"/>\n  <rect x=\"406\" y=\"248\" width=\"22\" height=\"36\" fill=\"#f4d27a\" opacity=\".65\"/>\n  <circle cx=\"428\" cy=\"290\" r=\"3\" fill=\"#d7b15a\"/>\n  <rect x=\"348\" y=\"220\" width=\"104\" height=\"12\" fill=\"#1b222a\"/>\n  <rect x=\"330\" y=\"214\" width=\"6\" height=\"28\" fill=\"#3a3a3a\"/>\n  <circle cx=\"333\" cy=\"212\" r=\"7\" fill=\"#f6de9a\" opacity=\".95\"/>\n  <rect x=\"464\" y=\"214\" width=\"6\" height=\"28\" fill=\"#3a3a3a\"/>\n  <circle cx=\"467\" cy=\"212\" r=\"7\" fill=\"#f6de9a\" opacity=\".8\"/>\n  <rect x=\"248\" y=\"268\" width=\"70\" height=\"50\" fill=\"#1a1f26\"/>\n  <rect x=\"256\" y=\"276\" width=\"24\" height=\"16\" fill=\"#86a7c4\" opacity=\".25\"/>\n  <rect x=\"286\" y=\"276\" width=\"24\" height=\"16\" fill=\"#86a7c4\" opacity=\".2\"/>\n  <rect x=\"482\" y=\"268\" width=\"70\" height=\"50\" fill=\"#1a1f26\"/>\n  <rect x=\"490\" y=\"276\" width=\"24\" height=\"16\" fill=\"#86a7c4\" opacity=\".22\"/>\n  <rect x=\"520\" y=\"276\" width=\"24\" height=\"16\" fill=\"#86a7c4\" opacity=\".18\"/>\n  <g fill=\"#152016\">\n    <ellipse cx=\"96\" cy=\"330\" rx=\"40\" ry=\"12\" opacity=\".35\"/>\n    <path d=\"M96 332 C50 260 46 180 96 120 C146 180 142 260 96 332Z\"/>\n    <path d=\"M148 328 C120 270 122 210 160 170 C184 220 176 280 148 328Z\"/>\n    <ellipse cx=\"720\" cy=\"328\" rx=\"30\" ry=\"10\" opacity=\".3\"/>\n    <path d=\"M720 330 C698 280 700 230 736 196 C754 240 744 290 720 330Z\"/>\n  </g>\n  <rect x=\"0\" y=\"430\" width=\"800\" height=\"20\" fill=\"#2a2a2a\"/>\n  <text x=\"400\" y=\"210\" text-anchor=\"middle\" fill=\"#ffffff\" opacity=\".16\" font-size=\"44\" font-family=\"Arial, Helvetica, sans-serif\" font-weight=\"700\">DEMO</text>\n</svg>" }
+  ];
+  function cameraById(id) {
+    return CAMERAS.filter(function (c) { return c.id === id; })[0];
+  }
+  function formatCamTime() {
+    try {
+      return new Date().toLocaleString("en-US", {
+        timeZone: "America/New_York",
+        month: "short", day: "numeric",
+        hour: "numeric", minute: "2-digit", second: "2-digit"
+      }) + " ET";
+    } catch (e) {
+      return new Date().toLocaleString();
+    }
+  }
+  function camCard(cam) {
+    const motion = !!cam.motion;
+    return '<button type="button" class="cam-card" data-action="cam-open" data-id="' + cam.id + '" aria-label="' + esc(cam.name) + ' camera, demo placeholder">' +
+      '<div class="cam-frame">' + cam.art +
+        '<span class="cam-live"><span class="pulse"></span>Live</span>' +
+        '<span class="cam-demo-badge">Demo</span>' +
+        '<span class="cam-motion' + (motion ? "" : " idle") + '"><span class="mdot"></span>' + (motion ? "Motion" : "Clear") + '</span>' +
+        '<div class="cam-bar"><div><div class="cname">' + esc(cam.name) + '</div></div>' +
+          '<div class="cmeta"><div class="ctime">' + esc(formatCamTime()) + '</div><div class="chint">Tap to expand · not a live feed</div></div>' +
+        '</div>' +
+      '</div>' +
+    '</button>';
+  }
+  function camRow() {
+    return '<div class="cam-row">' + CAMERAS.map(camCard).join("") + '</div>';
+  }
+  let camOpen = null;
+  function fillCamLightbox(id) {
+    const cam = cameraById(id);
+    const frame = document.getElementById("cam-lb-frame");
+    const box = document.getElementById("cam-lightbox");
+    if (!cam || !frame || !box) return;
+    const art = cam.art.replace(/id="([^"]+)"/g, 'id="$1-lb"').replace(/url\(#([^)]+)\)/g, 'url(#$1-lb)');
+    frame.innerHTML = art +
+      '<span class="cam-live"><span class="pulse"></span>Live</span>' +
+      '<span class="cam-demo-badge">Demo</span>' +
+      '<span class="cam-motion' + (cam.motion ? "" : " idle") + '"><span class="mdot"></span>' + (cam.motion ? "Motion" : "Clear") + '</span>' +
+      '<div class="cam-bar"><div><div class="cname">' + esc(cam.name) + '</div></div>' +
+        '<div class="cmeta"><div class="ctime">' + esc(formatCamTime()) + '</div><div class="chint">Illustrated placeholder · not from the house</div></div></div>';
+    box.hidden = false;
+    camOpen = id;
+    const closeBtn = box.querySelector(".cam-lb-close");
+    if (closeBtn) closeBtn.focus();
+  }
+  function closeCamLightbox() {
+    const box = document.getElementById("cam-lightbox");
+    if (box) box.hidden = true;
+    camOpen = null;
+  }
+  function tickCams() {
+    const t = formatCamTime();
+    document.querySelectorAll(".ctime").forEach(function (el) { el.textContent = t; });
+  }
+
   function viewHome() {
     const nL = lightsOnCount(), avgS = shadeAvg(), nM = musicPlayingCount() + (state.yamaha.playing ? 1 : 0);
     function areaTile(A) {
@@ -778,6 +926,9 @@ body.autotest #autotest-out { display: block; background: #111; color: #9f9; mar
         return '<button type="button" class="scene ' + s[3] + (on?" active":"") + '" data-action="scene" data-scene="' + s[0] + '">' +
           '<div class="ico">' + s[1] + '</div><div class="name">' + s[2] + '</div></button>';
       }).join("") + '</div>' +
+      '<div class="heading sub">Cameras</div>' +
+      '<p class="kicker">Illustrated placeholders only — no live or recorded video from the house.</p>' +
+      camRow() +
       '<div class="heading sub">Whole house</div>' +
       '<div class="groups">' +
         '<button type="button" class="group-btn' + (nL?" on":"") + '" data-action="nav" data-view="all-lights">' +
@@ -870,7 +1021,7 @@ body.autotest #autotest-out { display: block; background: #111; color: #9f9; mar
         '</div></div></div></div>';
     }
     if (id === "outdoor") {
-      html += '<p class="note">Outdoor cameras are on the More tab as placeholders — no live feeds in this demo.</p>';
+      html += '<p class="note">Driveway and Front cameras are on the Home tab as illustrated demo placeholders — no live feeds.</p>';
     }
     return html;
   }
@@ -883,7 +1034,7 @@ body.autotest #autotest-out { display: block; background: #111; color: #9f9; mar
       '<div class="tiles">' +
         '<button type="button" class="tile-btn" data-action="nav" data-view="climate"><div class="dot">🌡️</div><div class="name">Aprilaire</div><div class="st">' + state.climate.temp + "° · set " + state.climate.set + "° · " + mode + '</div><div class="hint">8800-series thermostat (demo)</div></button>' +
         '<button type="button" class="tile-btn" data-action="nav" data-view="alarm"><div class="dot">🔐</div><div class="name">Alarm</div><div class="st">' + alarmLabel() + '</div><div class="hint">Honeywell Lyric · status only</div></button>' +
-        '<button type="button" class="tile-btn" data-action="nav" data-view="cameras"><div class="dot">📷</div><div class="name">Cameras</div><div class="st">2 placeholders</div><div class="hint">Hikvision · no live video</div></button>' +
+        '<button type="button" class="tile-btn" data-action="nav" data-view="cameras"><div class="dot">📷</div><div class="name">Cameras</div><div class="st">Driveway · Front Door</div><div class="hint">Illustrated demo placeholders</div></button>' +
         '<button type="button" class="tile-btn" data-action="nav" data-view="door"><div class="dot">🔔</div><div class="name">Front door</div><div class="st">Ring · Idle</div><div class="hint">Doorbell and chimes</div></button>' +
         '<button type="button" class="tile-btn" data-action="nav" data-view="brilliant"><div class="dot">🖱️</div><div class="name">Brilliant panels</div><div class="st">3 panels · Alexa (one-way)</div><div class="hint">Cannot read on/off state</div></button>' +
         '<button type="button" class="tile-btn" data-action="nav" data-view="network"><div class="dot">📡</div><div class="name">Network</div><div class="st">All UniFi online</div><div class="hint">UDM Pro, switch, 6 APs</div></button>' +
@@ -931,11 +1082,8 @@ body.autotest #autotest-out { display: block; background: #111; color: #9f9; mar
   function viewCameras() {
     return backBtn("more") +
       '<div class="heading">Cameras</div>' +
-      '<p class="kicker">Two Hikvision cameras on the house network. Placeholder tiles only — no live or recorded video in this preview.</p>' +
-      '<div class="grid2 two">' +
-        '<div class="card"><div class="cam"><div class="big">📷</div><div class="t">Camera 1</div><div>Hikvision · preview placeholder</div></div></div>' +
-        '<div class="card"><div class="cam"><div class="big">📷</div><div class="t">Camera 2</div><div>Hikvision · preview placeholder</div></div></div>' +
-      '</div>';
+      '<p class="kicker">Driveway and Front Door / Front of House. Illustrated placeholders only — no live or recorded video from the house.</p>' +
+      camRow();
   }
 
   function viewDoor() {
@@ -1091,6 +1239,12 @@ body.autotest #autotest-out { display: block; background: #111; color: #9f9; mar
       case "brilliant-cmd":
         toast("Alexa (demo): “" + ds.cmd + "” — not sent to the house");
         return;
+      case "cam-open":
+        fillCamLightbox(ds.id);
+        return;
+      case "cam-close":
+        closeCamLightbox();
+        return;
     }
   }
 
@@ -1130,7 +1284,15 @@ body.autotest #autotest-out { display: block; background: #111; color: #9f9; mar
     if (ev.target && ev.target.dataset && ev.target.dataset.action) render();
   });
   document.getElementById("reset-link").addEventListener("click", resetDemo);
-  window.addEventListener("hashchange", function () { render(); });
+  window.addEventListener("hashchange", function () { closeCamLightbox(); render(); });
+  document.getElementById("cam-lightbox").addEventListener("click", function (ev) {
+    const btn = ev.target.closest("[data-action=cam-close]");
+    if (btn || ev.target.id === "cam-lightbox") closeCamLightbox();
+  });
+  document.addEventListener("keydown", function (ev) {
+    if (ev.key === "Escape" && camOpen) closeCamLightbox();
+  });
+  setInterval(tickCams, 1000);
 
   window.__diazDemo = { getState: function(){ return state; }, applyScene: applyScene, reset: resetDemo, defaults: defaults };
 
@@ -1165,6 +1327,8 @@ body.autotest #autotest-out { display: block; background: #111; color: #9f9; mar
       assert(!appHtml.includes(lanHint) && !appText.includes(lanHint), "no LAN IPs in app");
       assert(!/\b(?:\d{1,3}\.){3}\d{1,3}\b/.test(appText), "no dotted IPs in app text");
       assert(!/\bPIN\b\s*[:#]?\s*\d/.test(appText), "no PIN codes");
+      assert(appText.indexOf("Driveway") !== -1, "home has Driveway camera");
+      assert(appText.indexOf("Front Door / Front of House") !== -1, "home has Front Door camera");
     } catch (e) { errors.push(String(e && e.stack || e)); }
     const out = document.getElementById("autotest-out");
     const failed = results.filter(function (r) { return !r.ok; });
